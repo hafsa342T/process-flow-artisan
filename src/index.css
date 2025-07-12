@@ -2,39 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Professional ISO 9001 Process Mapping Design System
+All colors MUST be HSL for consistency and theming.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Professional blue-based color palette */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* Professional primary: deep blue */
+    --primary: 215 85% 25%;
     --primary-foreground: 210 40% 98%;
+    --primary-hover: 215 85% 30%;
+    --primary-light: 215 85% 92%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: lighter blue-gray */
+    --secondary: 210 20% 93%;
+    --secondary-foreground: 215 25% 25%;
+    --secondary-hover: 210 20% 88%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted: professional grays */
+    --muted: 210 15% 95%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent: professional teal for highlights */
+    --accent: 185 75% 35%;
+    --accent-foreground: 185 10% 95%;
+    --accent-light: 185 75% 92%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Status colors */
+    --success: 140 65% 35%;
+    --success-foreground: 140 10% 95%;
+    --warning: 45 90% 50%;
+    --warning-foreground: 45 10% 15%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 10% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Borders and inputs */
+    --border: 210 15% 88%;
+    --input: 210 15% 88%;
+    --ring: 215 85% 25%;
+
+    /* Process category colors */
+    --process-core: 215 85% 25%;
+    --process-support: 185 75% 35%;
+    --process-management: 270 75% 35%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(215 85% 25%), hsl(215 85% 35%));
+    --gradient-accent: linear-gradient(135deg, hsl(185 75% 35%), hsl(185 75% 45%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%), hsl(210 15% 98%));
+
+    /* Shadows */
+    --shadow-card: 0 4px 12px hsl(215 25% 15% / 0.08);
+    --shadow-process: 0 6px 20px hsl(215 85% 25% / 0.12);
+    --shadow-hover: 0 8px 25px hsl(215 85% 25% / 0.15);
+
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius: 0.5rem;
 
