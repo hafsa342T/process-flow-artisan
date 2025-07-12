@@ -8,11 +8,14 @@ serve(async (req) => {
     const { industry, processes, prompt, onlyBenchmarks } = await req.json()
     
     // Get the API key from Supabase secrets
-    const apiKey = Deno.env.get('PERPLEXITY_API_KEY') || Deno.env.get('OPENAI_API_KEY')
+    const apiKey = Deno.env.get('PERPLEXITY_API_KEY') || Deno.env.get('Open AI')
     
     if (!apiKey) {
+      console.error('No API key found. Available env vars:', Object.keys(Deno.env.toObject()))
       throw new Error('AI API key not configured in Supabase secrets')
     }
+
+    console.log('Using API key for request:', !!apiKey)
 
     // Create appropriate prompt based on request type
     let systemPrompt, userPrompt, maxTokens;
