@@ -81,7 +81,7 @@ export const ProcessMappingTool: React.FC = () => {
       }
       
       setGeneratedData(processData);
-      setCurrentStep('email-gate');
+      setCurrentStep('generated');
     } catch (error) {
       console.error('Generation error:', error);
       // Final fallback to benchmark data
@@ -89,7 +89,7 @@ export const ProcessMappingTool: React.FC = () => {
       const benchmark = getIndustryBenchmark(industry);
       const fallbackData = generateBenchmarkProcessMap(industry, coreProcesses, benchmark);
       setGeneratedData(fallbackData);
-      setCurrentStep('email-gate');
+      setCurrentStep('generated');
     } finally {
       setIsGenerating(false);
     }
@@ -211,22 +211,22 @@ export const ProcessMappingTool: React.FC = () => {
               <span className="font-medium">Input</span>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            <div className={`flex items-center gap-2 ${['generated', 'editing', 'email-gate', 'results'].includes(currentStep) ? 'text-primary' : 'text-muted-foreground'}`}>
+            <div className={`flex items-center gap-2 ${currentStep === 'generated' || currentStep === 'editing' ? 'text-primary' : 'text-muted-foreground'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                ['generated', 'editing', 'email-gate', 'results'].includes(currentStep) ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                currentStep === 'generated' || currentStep === 'editing' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
               }`}>
                 2
               </div>
               <span className="font-medium">Generate</span>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            <div className={`flex items-center gap-2 ${currentStep === 'results' ? 'text-primary' : 'text-muted-foreground'}`}>
+            <div className={`flex items-center gap-2 ${currentStep === 'editing' ? 'text-primary' : 'text-muted-foreground'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                currentStep === 'results' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                currentStep === 'editing' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
               }`}>
                 3
               </div>
-              <span className="font-medium">Results</span>
+              <span className="font-medium">Customize</span>
             </div>
           </div>
         </div>
@@ -266,21 +266,7 @@ export const ProcessMappingTool: React.FC = () => {
             <ProcessFlow data={generatedData} />
           </div>
         )}
-
-        {currentStep === 'editing' && generatedData && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">Customize Process Map</h2>
-                <p className="text-muted-foreground">Edit processes and export your documentation</p>
-              </div>
-              <ExportOptions data={generatedData} />
-            </div>
-            <ProcessList data={generatedData} onUpdate={updateProcessData} />
-            <ProcessFlow data={generatedData} />
-          </div>
-        )}
-
+        
         {currentStep === 'email-gate' && generatedData && (
           <EmailGate 
             data={generatedData} 
@@ -296,6 +282,25 @@ export const ProcessMappingTool: React.FC = () => {
             userEmail={userEmail}
             onBack={handleBackToEmailGate}
           />
+        )}
+        {currentStep === 'editing' && generatedData && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">Customize Process Map</h2>
+                <p className="text-muted-foreground">Edit processes and get your complete report</p>
+              </div>
+              <Button 
+                onClick={() => setCurrentStep('email-gate')} 
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Get Report
+              </Button>
+            </div>
+            <ProcessList data={generatedData} onUpdate={updateProcessData} />
+            <ProcessFlow data={generatedData} />
+          </div>
         )}
       </div>
     </div>
