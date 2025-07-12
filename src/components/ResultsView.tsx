@@ -163,9 +163,9 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       
       if (error) throw error;
       
-      // Create and download the PNG file
-      const pngBlob = base64ToBlob(pngData.png, 'image/png');
-      const url = URL.createObjectURL(pngBlob);
+      // Create and download the SVG file
+      const svgBlob = base64ToBlob(pngData.png, 'image/svg+xml');
+      const url = URL.createObjectURL(svgBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = pngData.filename;
