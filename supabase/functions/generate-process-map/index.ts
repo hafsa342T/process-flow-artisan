@@ -3,7 +3,17 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
   try {
     const { industry, processes, prompt, onlyBenchmarks } = await req.json()
     
@@ -89,10 +99,8 @@ Examples:
         JSON.stringify({ processes }),
         { 
           headers: { 
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'POST',
-            'Access-Control-Allow-Headers': 'Content-Type'
+            ...corsHeaders,
+            'Content-Type': 'application/json'
           } 
         }
       )
@@ -131,10 +139,8 @@ Examples:
       JSON.stringify({ processMap: processData }),
       { 
         headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'POST',
-          'Access-Control-Allow-Headers': 'Content-Type'
+          ...corsHeaders,
+          'Content-Type': 'application/json'
         } 
       }
     )
@@ -150,8 +156,8 @@ Examples:
       { 
         status: 500,
         headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          ...corsHeaders,
+          'Content-Type': 'application/json'
         } 
       }
     )
