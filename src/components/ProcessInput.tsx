@@ -150,8 +150,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
                 <Button
                   onClick={handleGetAiSuggestions}
                   disabled={!industry.trim() || isLoadingAiSuggestions}
-                  variant="outline"
-                  className="h-12 px-4"
+                  className="h-12 px-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200 animate-pulse"
                 >
                   {isLoadingAiSuggestions ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
