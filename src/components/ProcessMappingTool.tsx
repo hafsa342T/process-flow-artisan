@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle, Edit, ArrowLeft, Building2, FileText, ArrowRight, Download, ImageIcon } from 'lucide-react';
+import { CheckCircle, Edit, ArrowLeft, Building2, FileText, ArrowRight, Download, ImageIcon, Mail } from 'lucide-react';
 import { ProcessInput } from './ProcessInput';
 import { ProcessList } from './ProcessList';
 import { ProcessFlow } from './ProcessFlow';
@@ -505,21 +505,12 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
                   <Edit className="h-4 w-4" />
                   Customize
                 </Button>
-                <Button
-                  onClick={() => downloadPDF(generatedData, industry)}
-                  variant="outline"
+                <Button 
+                  onClick={() => setCurrentStep('email-gate')}
                   className="gap-2"
                 >
-                  <FileText className="h-4 w-4" />
-                  PDF Report
-                </Button>
-                <Button
-                  onClick={() => downloadPNG(generatedData, industry)}
-                  variant="outline"
-                  className="gap-2"
-                >
-                  <ImageIcon className="h-4 w-4" />
-                  PNG Diagram
+                  <Mail className="h-4 w-4" />
+                  Get Report
                 </Button>
               </div>
             </div>
