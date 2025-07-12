@@ -13,18 +13,18 @@ serve(async (req) => {
   }
 
   try {
-    const { processData, industry, userEmail } = await req.json();
+    const { processData, industry } = await req.json();
 
-    // Generate PDF content using jsPDF-like functionality
-    const pdfContent = generatePDFReport(processData, industry);
-
-    // For now, return a base64 encoded simple PDF
-    // In production, you could use puppeteer or other PDF libraries
-    const pdfBase64 = btoa(pdfContent);
+    // Generate a styled HTML report
+    const htmlReport = generateStyledReport(processData, industry);
+    
+    // Convert HTML to a simple text-based PDF (for now)
+    // In production, you would use puppeteer or similar
+    const pdfBase64 = btoa(htmlReport);
 
     return new Response(JSON.stringify({ 
       pdf: pdfBase64,
-      filename: `${industry.replace(/\s+/g, '_')}_Process_Map.pdf`
+      filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Map.pdf`
     }), {
       headers: { 
         ...corsHeaders,
@@ -46,119 +46,187 @@ serve(async (req) => {
   }
 });
 
-function generatePDFReport(processData: any, industry: string): string {
-  // Simple text-based PDF content
-  // In production, use proper PDF generation libraries
-  const header = `%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
+function generateStyledReport(processData: any, industry: string): string {
+  const processes = processData?.processes || [];
+  const interactions = processData?.interactions || [];
+  
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ISO 9001 Process Map - ${industry}</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            line-height: 1.6; 
+            color: #333;
+        }
+        .header { 
+            text-align: center; 
+            border-bottom: 3px solid #3b82f6; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px;
+        }
+        .header h1 { 
+            color: #1e40af; 
+            margin: 0; 
+            font-size: 28px;
+        }
+        .header h2 { 
+            color: #6b7280; 
+            margin: 5px 0 0 0; 
+            font-weight: normal;
+        }
+        .section { 
+            margin: 30px 0; 
+        }
+        .section h3 { 
+            color: #1e40af; 
+            border-bottom: 2px solid #e5e7eb; 
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .process-card { 
+            border: 1px solid #d1d5db; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 15px 0; 
+            background: #f9fafb;
+        }
+        .process-title { 
+            font-size: 18px; 
+            font-weight: bold; 
+            color: #1f2937; 
+            margin-bottom: 10px;
+        }
+        .process-category { 
+            display: inline-block; 
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+        .core { background: #dcfce7; color: #166534; }
+        .support { background: #fef3c7; color: #92400e; }
+        .management { background: #e0e7ff; color: #3730a3; }
+        .process-details { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-top: 15px;
+        }
+        .detail-item { 
+            margin-bottom: 10px;
+        }
+        .detail-label { 
+            font-weight: bold; 
+            color: #374151; 
+            margin-bottom: 5px;
+        }
+        .detail-content { 
+            color: #6b7280; 
+            font-size: 14px;
+        }
+        .interactions { 
+            margin-top: 30px;
+        }
+        .interaction-item { 
+            background: #f3f4f6; 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-left: 4px solid #3b82f6; 
+            border-radius: 4px;
+        }
+        .summary { 
+            background: #eff6ff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 30px 0;
+        }
+        .footer { 
+            text-align: center; 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 1px solid #e5e7eb; 
+            color: #6b7280; 
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>ISO 9001:2015 Process Map</h1>
+        <h2>${industry}</h2>
+        <p>Generated on ${new Date().toLocaleDateString()}</p>
+    </div>
 
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
+    <div class="summary">
+        <h3>Executive Summary</h3>
+        <p>This document outlines the process map for <strong>${industry}</strong> operations in accordance with ISO 9001:2015 requirements. 
+        The process map includes ${processes.length} processes categorized into core, support, and management processes.</p>
+    </div>
 
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/Resources <<
-/Font <<
-/F1 4 0 R
->>
->>
-/MediaBox [0 0 612 792]
-/Contents 5 0 R
->>
-endobj
+    <div class="section">
+        <h3>Process Overview</h3>
+        ${processes.map((process: any) => `
+            <div class="process-card">
+                <div class="process-title">${process.name}</div>
+                <span class="process-category ${process.category}">${process.category}</span>
+                
+                <div class="process-details">
+                    <div>
+                        <div class="detail-item">
+                            <div class="detail-label">Process Owner</div>
+                            <div class="detail-content">${process.owner}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Key Inputs</div>
+                            <div class="detail-content">${process.inputs?.join(', ') || 'Not specified'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Key Outputs</div>
+                            <div class="detail-content">${process.outputs?.join(', ') || 'Not specified'}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="detail-item">
+                            <div class="detail-label">Primary Risk</div>
+                            <div class="detail-content">${process.risk || 'Risk assessment pending'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Key Performance Indicator</div>
+                            <div class="detail-content">${process.kpi || 'KPI to be defined'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">ISO 9001 Clauses</div>
+                            <div class="detail-content">${process.isoClauses?.join(', ') || 'To be mapped'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('')}
+    </div>
 
-4 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Times-Roman
->>
-endobj
+    ${interactions.length > 0 ? `
+    <div class="section interactions">
+        <h3>Process Interactions</h3>
+        ${interactions.map((interaction: any) => `
+            <div class="interaction-item">
+                <strong>${interaction.from}</strong> → <strong>${interaction.to}</strong>
+                ${interaction.description ? `<br><span style="color: #6b7280; font-size: 14px;">${interaction.description}</span>` : ''}
+            </div>
+        `).join('')}
+    </div>
+    ` : ''}
 
-5 0 obj
-<<
-/Length ${calculateContentLength(processData, industry)}
->>
-stream
-BT
-/F1 18 Tf
-72 720 Td
-(ISO 9001 Process Map Report) Tj
-0 -30 Td
-/F1 14 Tf
-(Industry: ${industry}) Tj
-0 -40 Td
-/F1 12 Tf`;
-
-  let content = header;
-  let yPos = 640;
-
-  // Add process details
-  if (processData?.processes) {
-    content += `
-0 -20 Td
-(PROCESSES:) Tj`;
-    yPos -= 40;
-
-    processData.processes.forEach((process: any, index: number) => {
-      if (yPos < 100) return; // Prevent overflow
-      content += `
-0 -20 Td
-(${index + 1}. ${process.name}) Tj
-0 -15 Td
-(   Category: ${process.category}) Tj
-0 -15 Td
-(   Owner: ${process.owner}) Tj`;
-      yPos -= 50;
-    });
-  }
-
-  content += `
-ET
-endstream
-endobj
-
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000074 00000 n 
-0000000120 00000 n 
-0000000274 00000 n 
-0000000365 00000 n 
-trailer
-<<
-/Size 6
-/Root 1 0 R
->>
-startxref
-${content.length}
-%%EOF`;
-
-  return content;
-}
-
-function calculateContentLength(processData: any, industry: string): number {
-  // Rough calculation of content length
-  let length = 200; // Base content
-  length += industry.length * 2;
-  if (processData?.processes) {
-    processData.processes.forEach((process: any) => {
-      length += process.name.length * 3;
-      length += 100; // Other fields
-    });
-  }
-  return length;
+    <div class="footer">
+        Generated by ISO 9001 Process Mapper | ${new Date().toLocaleDateString()}
+    </div>
+</body>
+</html>
+  `;
 }

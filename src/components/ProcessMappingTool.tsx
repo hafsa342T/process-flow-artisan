@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Building2, Brain, FileText, Download, Plus, Trash2, Edit, ArrowRight } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { CheckCircle, Edit, ArrowLeft, Building2, FileText, ArrowRight, Download, ImageIcon } from 'lucide-react';
 import { ProcessInput } from './ProcessInput';
 import { ProcessList } from './ProcessList';
 import { ProcessFlow } from './ProcessFlow';
-import { ExportOptions } from './ExportOptions';
 import { EmailGate } from './EmailGate';
 import { ResultsView } from './ResultsView';
+import { getIndustryBenchmark } from '@/data/industryBenchmarks';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export interface ProcessData {
   id: string;
@@ -337,6 +336,74 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     return { processes, interactions };
   };
 
+  // Download functions
+  const downloadPDF = async (data: ProcessMappingData, industry: string) => {
+    try {
+      toast('Generating PDF report...', { duration: 2000 });
+      
+      const { data: pdfData, error } = await supabase.functions.invoke('generate-pdf-report', {
+        body: { processData: data, industry }
+      });
+      
+      if (error) throw error;
+      
+      // Create and download the PDF file
+      const pdfBlob = base64ToBlob(pdfData.pdf, 'text/html');
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pdfData.filename.replace('.pdf', '.html');
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast('PDF report downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast('Failed to generate PDF report. Please try again.');
+    }
+  };
+
+  const downloadPNG = async (data: ProcessMappingData, industry: string) => {
+    try {
+      toast('Generating process diagram...', { duration: 2000 });
+      
+      const { data: pngData, error } = await supabase.functions.invoke('generate-png-diagram', {
+        body: { processData: data, industry }
+      });
+      
+      if (error) throw error;
+      
+      // Create and download the SVG file
+      const svgBlob = base64ToBlob(pngData.png, 'image/svg+xml');
+      const url = URL.createObjectURL(svgBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pngData.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast('Process diagram downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading PNG:', error);
+      toast('Failed to generate process diagram. Please try again.');
+    }
+  };
+
+  // Utility function to convert base64 to blob
+  const base64ToBlob = (base64: string, mimeType: string): Blob => {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mimeType });
+  };
+
   const handleEdit = () => {
     setCurrentStep('editing');
   };
@@ -437,6 +504,22 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
                 <Button onClick={handleEdit} className="gap-2">
                   <Edit className="h-4 w-4" />
                   Customize
+                </Button>
+                <Button
+                  onClick={() => downloadPDF(generatedData, industry)}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  PDF Report
+                </Button>
+                <Button
+                  onClick={() => downloadPNG(generatedData, industry)}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <ImageIcon className="h-4 w-4" />
+                  PNG Diagram
                 </Button>
               </div>
             </div>
