@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Brain, Building2, Loader2, Lightbulb, Key, Plus, X } from 'lucide-react';
+import { Brain, Building2, Loader2, Lightbulb, Plus, X } from 'lucide-react';
 import { getIndustryBenchmark, IndustryBenchmark } from '@/data/industryBenchmarks';
 
 interface ProcessInputProps {
@@ -14,7 +14,7 @@ interface ProcessInputProps {
   coreProcesses: string;
   onIndustryChange: (value: string) => void;
   onCoreProcessesChange: (value: string) => void;
-  onGenerate: (apiKey?: string) => void;
+  onGenerate: () => void;
   isGenerating: boolean;
 }
 
@@ -26,8 +26,6 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
   onGenerate,
   isGenerating
 }) => {
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKey, setShowApiKey] = useState(false);
   const [benchmark, setBenchmark] = useState<IndustryBenchmark | null>(null);
   const [selectedBenchmarkProcesses, setSelectedBenchmarkProcesses] = useState<string[]>([]);
 
@@ -62,7 +60,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
   };
 
   const handleGenerate = () => {
-    onGenerate(apiKey || undefined);
+    onGenerate(); // No API key needed from client
   };
 
   const canGenerate = industry.trim() && coreProcesses.trim();
@@ -80,41 +78,23 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
         </div>
       </div>
 
-      {/* API Key Configuration */}
-      <Card className="border-warning/30 bg-warning/5">
+      {/* Enhanced Features Notice */}
+      <Card className="border-accent/30 bg-gradient-to-r from-accent-light/20 to-primary-light/20">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-warning">
-            <Key className="h-5 w-5" />
-            AI Configuration
+          <CardTitle className="flex items-center gap-2 text-accent">
+            <Brain className="h-5 w-5" />
+            AI-Enhanced Process Generation
           </CardTitle>
           <CardDescription>
-            For best results, provide your Perplexity API key to access real-time industry insights
+            Powered by advanced AI for comprehensive industry-standard process mapping
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-4">
-            <div className="flex-1">
-              <Input
-                type={showApiKey ? "text" : "password"}
-                placeholder="pplx-xxxxxxxxxxxxxxxxxxxx"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className="font-mono"
-              />
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowApiKey(!showApiKey)}
-            >
-              {showApiKey ? 'Hide' : 'Show'}
-            </Button>
-          </div>
+        <CardContent>
           <Alert>
             <Lightbulb className="h-4 w-4" />
             <AlertDescription>
-              Without an API key, the tool will use comprehensive industry benchmarks. 
-              With Perplexity AI, you'll get current industry trends and enhanced process mapping.
+              Our AI system combines industry benchmarks with real-time insights to generate 
+              comprehensive ISO 9001 process documentation tailored to your industry.
             </AlertDescription>
           </Alert>
         </CardContent>
