@@ -7,15 +7,15 @@ serve(async (req) => {
   try {
     const { industry, processes, prompt, onlyBenchmarks } = await req.json()
     
-    // Get the API key from Supabase secrets
-    const apiKey = Deno.env.get('PERPLEXITY_API_KEY') || Deno.env.get('Open AI')
+    // Get the OpenAI API key from Supabase secrets
+    const apiKey = Deno.env.get('Open AI')
     
     if (!apiKey) {
-      console.error('No API key found. Available env vars:', Object.keys(Deno.env.toObject()))
-      throw new Error('AI API key not configured in Supabase secrets')
+      console.error('No OpenAI API key found. Available env vars:', Object.keys(Deno.env.toObject()))
+      throw new Error('OpenAI API key not configured in Supabase secrets')
     }
 
-    console.log('Using API key for request:', !!apiKey)
+    console.log('Using OpenAI API key for request:', !!apiKey)
 
     // Create appropriate prompt based on request type
     let systemPrompt, userPrompt, maxTokens;
@@ -36,15 +36,15 @@ Examples:
       maxTokens = 4000;
     }
 
-    // Use Perplexity AI for real-time industry knowledge
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+    // Use OpenAI API for generating industry-specific processes
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'llama-3.1-sonar-large-128k-online',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -55,14 +55,8 @@ Examples:
             content: userPrompt
           }
         ],
-        temperature: 0.2,
-        top_p: 0.9,
-        max_tokens: maxTokens,
-        return_images: false,
-        return_related_questions: false,
-        search_recency_filter: 'month',
-        frequency_penalty: 1,
-        presence_penalty: 0
+        temperature: 0.7,
+        max_tokens: maxTokens
       }),
     })
 
