@@ -129,15 +129,20 @@ export const ProcessMappingTool: React.FC = () => {
 
   const buildAIPrompt = (industry: string, userProcesses: string): string => {
     return `
-Generate a comprehensive ISO 9001:2015 process map for the ${industry} industry. 
+Generate a comprehensive ISO 9001:2015 process map for the ${industry} industry.
 
 User mentioned these processes: ${userProcesses}
 
+CRITICAL: Generate industry-specific processes relevant to ${industry}. For example:
+- If dental clinic: include patient registration, appointment scheduling, clinical examinations, treatment planning, dental procedures, sterilization, billing, patient records management
+- If restaurant: include menu planning, inventory management, food preparation, order taking, cooking, serving, cleaning, quality control
+- If law firm: include client intake, case management, legal research, document preparation, court representation, billing
+
 Requirements:
-1. Include industry benchmark processes (core, support, management) even if not mentioned by user
+1. Include realistic ${industry} industry processes (core, support, management)
 2. Add detailed process interactions showing how processes feed into each other
 3. Categorize all processes correctly (core/support/management)
-4. Include realistic inputs, outputs, risks, KPIs, and responsible roles
+4. Include realistic inputs, outputs, risks, KPIs, and responsible roles for ${industry}
 5. Map to relevant ISO 9001:2015 clauses
 6. Show process flow relationships with descriptions
 
@@ -184,7 +189,6 @@ Return ONLY valid JSON in this exact format:
 Focus on ${industry} industry best practices and current ISO 9001:2015 requirements.
 `;
   };
-
   const generateEnhancedBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
     const userProcessList = userProcesses.split('\n').filter(p => p.trim());
     const allProcesses = [...userProcessList];

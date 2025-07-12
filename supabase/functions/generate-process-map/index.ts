@@ -85,7 +85,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ data: processData }),
+      JSON.stringify({ processMap: processData }),
       { 
         headers: { 
           'Content-Type': 'application/json',
