@@ -60,7 +60,6 @@ const handler = async (req: Request): Promise<Response> => {
       html: `
         <div style="max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
           <div style="background: #f8f9fa; padding: 30px; text-align: center; border-bottom: 3px solid #0066cc;">
-            <img src="https://qse-academy.com/logo.png" alt="QSE Academy" style="max-height: 60px; margin-bottom: 20px;" />
             <h1 style="color: #0066cc; margin: 0; font-size: 24px; font-weight: 600;">
               QSE Academy
             </h1>
