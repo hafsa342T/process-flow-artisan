@@ -1,1 +1,13 @@
 project_id = "szqvtueegfqsekcpujgi"
+
+[functions.generate-process-map]
+verify_jwt = false
+
+[functions.generate-pdf-report]
+verify_jwt = false
+
+[functions.generate-png-diagram]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false

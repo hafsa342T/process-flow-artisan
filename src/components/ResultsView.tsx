@@ -18,6 +18,8 @@ import {
 import { ProcessMappingData } from './ProcessMappingTool';
 import { ProcessList } from './ProcessList';
 import { ProcessFlow } from './ProcessFlow';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ResultsViewProps {
   data: ProcessMappingData;
@@ -104,26 +106,71 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  // Utility function to convert base64 to blob
+  const base64ToBlob = (base64: string, mimeType: string): Blob => {
+    const byteCharacters = atob(base64);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    return new Blob([byteArray], { type: mimeType });
+  };
+
   const downloadPDF = async () => {
-    // TODO: Call Supabase Edge Function to generate PDF
-    // const { data: pdfData, error } = await supabase.functions.invoke('generate-pdf-report', {
-    //   body: { processData: data, industry, userEmail }
-    // });
-    // if (error) throw error;
-    
-    // For now, show message
-    alert('PDF generation will be implemented with Supabase Edge Functions');
+    try {
+      toast('Generating PDF report...', { duration: 2000 });
+      
+      const { data: pdfData, error } = await supabase.functions.invoke('generate-pdf-report', {
+        body: { processData: data, industry, userEmail: 'user@example.com' }
+      });
+      
+      if (error) throw error;
+      
+      // Create and download the PDF file
+      const pdfBlob = base64ToBlob(pdfData.pdf, 'application/pdf');
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pdfData.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast('PDF report downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      toast('Failed to generate PDF report. Please try again.');
+    }
   };
 
   const downloadPNG = async () => {
-    // TODO: Call Supabase Edge Function to generate PNG
-    // const { data: pngData, error } = await supabase.functions.invoke('generate-png-diagram', {
-    //   body: { processData: data, industry }
-    // });
-    // if (error) throw error;
-    
-    // For now, show message
-    alert('PNG generation will be implemented with Supabase Edge Functions');
+    try {
+      toast('Generating process diagram...', { duration: 2000 });
+      
+      const { data: pngData, error } = await supabase.functions.invoke('generate-png-diagram', {
+        body: { processData: data, industry }
+      });
+      
+      if (error) throw error;
+      
+      // Create and download the PNG file
+      const pngBlob = base64ToBlob(pngData.png, 'image/png');
+      const url = URL.createObjectURL(pngBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = pngData.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      toast('Process diagram downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading PNG:', error);
+      toast('Failed to generate process diagram. Please try again.');
+    }
   };
 
   const getCoreProcessCount = () => data.processes.filter(p => p.category === 'core').length;
