@@ -13,6 +13,7 @@ interface ProcessEmailRequest {
   email: string;
   industry: string;
   processData: any;
+  pdfReport?: string; // Base64 encoded PDF
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, industry, processData }: ProcessEmailRequest = await req.json();
+    const { email, industry, processData, pdfReport }: ProcessEmailRequest = await req.json();
 
     if (!email || !industry || !processData) {
       return new Response(
@@ -37,47 +38,90 @@ const handler = async (req: Request): Promise<Response> => {
     const processCount = processData.processes?.length || 0;
     const processNames = processData.processes?.map((p: any) => p.name).join(", ") || "None";
 
+    // Prepare email attachments
+    const attachments = [];
+    if (pdfReport) {
+      attachments.push({
+        filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Map.pdf`,
+        content: pdfReport.split(',')[1], // Remove data:application/pdf;base64, prefix
+        type: 'application/pdf',
+      });
+    }
+
     const emailResponse = await resend.emails.send({
-      from: "ISO Process Mapper <onboarding@resend.dev>",
+      from: "QSE Academy <noreply@qse-academy.com>",
       to: [email],
-      subject: `Your ${industry} ISO 9001 Process Map is Ready`,
+      cc: ["support@qse-academy.com"],
+      subject: `ISO 9001 Process Map Report - ${industry}`,
+      attachments,
       html: `
-        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-          <h1 style="color: #2563eb; border-bottom: 2px solid #e5e7eb; padding-bottom: 16px;">
-            Your ISO 9001 Process Map
-          </h1>
+        <div style="max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
+          <div style="background: #f8f9fa; padding: 30px; text-align: center; border-bottom: 3px solid #0066cc;">
+            <img src="https://qse-academy.com/logo.png" alt="QSE Academy" style="max-height: 60px; margin-bottom: 20px;" />
+            <h1 style="color: #0066cc; margin: 0; font-size: 24px; font-weight: 600;">
+              QSE Academy
+            </h1>
+            <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Quality, Safety & Environmental Training</p>
+          </div>
           
-          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #1e40af; margin-top: 0;">Industry: ${industry}</h2>
-            <p style="color: #64748b; margin-bottom: 16px;">
-              Generated ${processCount} comprehensive processes for your organization.
+          <div style="padding: 30px;">
+            <p style="margin-bottom: 20px; font-size: 16px;">Dear Valued Client,</p>
+            
+            <p style="margin-bottom: 20px;">
+              We are pleased to provide you with your customized ISO 9001:2015 Process Map report for the <strong>${industry}</strong> sector.
             </p>
             
-            <h3 style="color: #374151; margin-bottom: 8px;">Process Overview:</h3>
-            <p style="color: #6b7280; line-height: 1.6;">
-              ${processNames.substring(0, 200)}${processNames.length > 200 ? "..." : ""}
+            <div style="background: #f8f9fa; border-left: 4px solid #0066cc; padding: 20px; margin: 25px 0;">
+              <h3 style="color: #0066cc; margin-top: 0; margin-bottom: 15px;">Report Summary</h3>
+              <ul style="margin: 0; padding-left: 20px;">
+                <li><strong>Industry Sector:</strong> ${industry}</li>
+                <li><strong>Total Processes Identified:</strong> ${processCount}</li>
+                <li><strong>Report Generated:</strong> ${new Date().toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</li>
+              </ul>
+            </div>
+            
+            <p style="margin-bottom: 20px;">
+              This comprehensive process map has been developed based on industry best practices and ISO 9001:2015 requirements. 
+              The attached PDF report contains detailed process mappings, interactions, and compliance guidelines specific to your sector.
             </p>
-          </div>
-          
-          <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0;">
-            <h3 style="color: #92400e; margin-top: 0;">Next Steps:</h3>
-            <ul style="color: #a16207; line-height: 1.6;">
-              <li>Review and customize the generated processes</li>
-              <li>Map process interactions within your organization</li>
-              <li>Assign process owners and responsibilities</li>
-              <li>Implement monitoring and measurement systems</li>
-            </ul>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <p style="color: #64748b;">
-              This process map was generated using industry benchmarks and best practices.
+            
+            <div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 20px; margin: 25px 0;">
+              <h4 style="color: #0066cc; margin-top: 0; margin-bottom: 15px;">Next Steps & Recommendations</h4>
+              <ul style="margin: 0; padding-left: 20px; color: #444;">
+                <li>Review the process map with your management team</li>
+                <li>Customize processes to align with your organization's specific operations</li>
+                <li>Identify process owners and define responsibilities</li>
+                <li>Establish monitoring and measurement criteria</li>
+                <li>Consider our ISO 9001 implementation training programs</li>
+              </ul>
+            </div>
+            
+            <p style="margin-bottom: 20px;">
+              Should you require any clarification or additional support with your ISO 9001 implementation, 
+              please do not hesitate to contact our support team at 
+              <a href="mailto:support@qse-academy.com" style="color: #0066cc; text-decoration: none;">support@qse-academy.com</a>.
             </p>
+            
+            <p style="margin-bottom: 30px;">
+              Thank you for choosing QSE Academy for your quality management system needs.
+            </p>
+            
+            <p style="margin-bottom: 5px;">Best regards,</p>
+            <p style="margin-bottom: 20px; font-weight: 600;">QSE Academy Team</p>
           </div>
           
-          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center;">
-            <p style="color: #9ca3af; font-size: 14px;">
-              © 2024 ISO 9001 Process Mapper. All rights reserved.
+          <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+            <p style="margin: 0; color: #666; font-size: 12px;">
+              QSE Academy | Quality, Safety & Environmental Training<br>
+              Web: <a href="https://qse-academy.com" style="color: #0066cc;">qse-academy.com</a> | 
+              Email: <a href="mailto:support@qse-academy.com" style="color: #0066cc;">support@qse-academy.com</a>
+            </p>
+            <p style="margin: 10px 0 0 0; color: #999; font-size: 11px;">
+              This email was sent automatically. Please do not reply to this email address.
             </p>
           </div>
         </div>
