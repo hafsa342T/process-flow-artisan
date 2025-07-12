@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Mail, Loader2, CheckCircle, Download, FileText } from 'lucide-react';
+import { Mail, Loader2, CheckCircle, FileText } from 'lucide-react';
 import { ProcessMappingData } from './ProcessMappingTool';
 
 interface EmailGateProps {
@@ -47,23 +47,13 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
     const { supabase } = await import('@/integrations/supabase/client');
     
     try {
-      // First generate the PDF report
-      const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-pdf-report', {
-        body: { processData: data, industry, userEmail: email }
-      });
-      
-      if (pdfError) {
-        console.error('PDF generation error:', pdfError);
-        throw new Error('Failed to generate PDF report');
-      }
-      
-      // Then send the email with the PDF attached
+      // Send basic email without PDF attachment
       const { data: result, error } = await supabase.functions.invoke('send-email', {
         body: { 
           email, 
           processData: data, 
           industry,
-          pdfReport: pdfData.pdf // Pass the generated PDF as base64
+          isBasicReport: true // Flag to indicate this is a basic report
         }
       });
       
@@ -95,7 +85,7 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
           <Alert>
             <Mail className="h-4 w-4" />
             <AlertDescription>
-              Check your email for the complete process documentation, including downloadable formats.
+              Your basic process overview has been sent to {email}. Upgrade to premium for branded reports and expert validation.
             </AlertDescription>
           </Alert>
           
@@ -110,10 +100,10 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
             </Button>
             <Button 
               className="flex-1 gap-2"
-              onClick={() => onEmailSubmitted(email)}
+              onClick={() => window.location.href = `/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`}
             >
-              <Download className="h-4 w-4" />
-              View Results
+              <CheckCircle className="h-4 w-4" />
+              Get Premium Report
             </Button>
           </div>
         </CardContent>
@@ -129,7 +119,7 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
         </div>
         <CardTitle className="text-xl">Get Your Process Report</CardTitle>
         <CardDescription>
-          Enter your email to receive and download your complete ISO 9001 process mapping report
+          Enter your email to receive your basic process overview and unlock premium branded reports
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -179,15 +169,21 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
         </form>
 
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-medium text-sm mb-2">Your report includes:</h4>
+          <h4 className="font-medium text-sm mb-2">Your basic report includes:</h4>
           <ul className="text-xs text-muted-foreground space-y-1">
-            <li>• Complete process documentation ({data.processes.length} processes)</li>
-            <li>• Process interaction diagrams</li>
+            <li>• Process overview ({data.processes.length} processes identified)</li>
+            <li>• Basic process structure</li>
             <li>• ISO 9001 clause mapping</li>
-            <li>• Risk assessment summary</li>
-            <li>• KPI recommendations</li>
-            <li>• Downloadable formats (PDF, CSV, JSON)</li>
           </ul>
+          <div className="mt-3 pt-3 border-t border-border/50">
+            <h4 className="font-medium text-sm mb-1">Upgrade to Premium for:</h4>
+            <ul className="text-xs text-muted-foreground space-y-1">
+              <li>• Custom branded PDF report</li>
+              <li>• Expert consultant validation</li>
+              <li>• All download formats (PDF, CSV, JSON, PNG)</li>
+              <li>• Implementation recommendations</li>
+            </ul>
+          </div>
         </div>
       </CardContent>
     </Card>

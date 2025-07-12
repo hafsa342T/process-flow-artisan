@@ -1,0 +1,164 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  CheckCircle, 
+  Download, 
+  Mail, 
+  Clock,
+  ArrowRight,
+  Home
+} from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+
+const PaymentSuccess = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  
+  const email = searchParams.get('email') || '';
+  const industry = searchParams.get('industry') || '';
+
+  const handleDownload = (format: string) => {
+    // TODO: Implement actual download functionality with branded reports
+    console.log(`Downloading ${format} for ${industry}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 p-4">
+      <div className="max-w-2xl mx-auto space-y-8 pt-16">
+        {/* Success Header */}
+        <div className="text-center space-y-6">
+          <div className="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle className="h-10 w-10 text-success" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">Payment Successful!</h1>
+            <p className="text-lg text-muted-foreground">
+              Your premium branded report is being prepared
+            </p>
+          </div>
+        </div>
+
+        {/* Order Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-success" />
+              Order Confirmation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-sm text-muted-foreground">Industry</div>
+                <div className="font-medium">{industry}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Amount Paid</div>
+                <div className="font-medium">$99.00</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Email</div>
+                <div className="font-medium">{email}</div>
+              </div>
+              <div>
+                <div className="text-sm text-muted-foreground">Status</div>
+                <Badge variant="default" className="gap-1">
+                  <Clock className="h-3 w-3" />
+                  Processing
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* What Happens Next */}
+        <Card>
+          <CardHeader>
+            <CardTitle>What Happens Next?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">
+                  1
+                </div>
+                <div>
+                  <h4 className="font-medium">Report Customization</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Our team is adding your company branding to the report
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">
+                  2
+                </div>
+                <div>
+                  <h4 className="font-medium">Expert Review</h4>
+                  <p className="text-sm text-muted-foreground">
+                    ISO 9001 consultant validates and enhances your process map
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 mt-0.5">
+                  3
+                </div>
+                <div>
+                  <h4 className="font-medium">Delivery</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Receive your branded report and download links via email
+                  </p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Expected Delivery */}
+        <Card className="border-primary/20">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Mail className="h-5 w-5 text-primary" />
+              <div>
+                <div className="font-medium">Expected Delivery</div>
+                <div className="text-sm text-muted-foreground">
+                  Within 24-48 hours to {email}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => navigate('/')} className="flex-1 gap-2">
+            <Home className="h-4 w-4" />
+            Create New Mapping
+          </Button>
+          <Button 
+            onClick={() => window.open('mailto:support@yourcompany.com', '_blank')} 
+            className="flex-1 gap-2"
+          >
+            <Mail className="h-4 w-4" />
+            Contact Support
+          </Button>
+        </div>
+
+        {/* Footer Note */}
+        <div className="text-center text-sm text-muted-foreground bg-muted/30 rounded-lg p-4">
+          <p>
+            Need immediate assistance? Contact our support team at{' '}
+            <a href="mailto:support@yourcompany.com" className="text-primary hover:underline">
+              support@yourcompany.com
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PaymentSuccess;
