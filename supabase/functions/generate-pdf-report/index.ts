@@ -160,6 +160,59 @@ function generateStyledReport(processData: any, industry: string): string {
             padding: 20px; 
             overflow-x: auto;
         }
+        .hierarchy-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+        .hierarchy-level {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            width: 100%;
+        }
+        .hierarchy-title {
+            font-weight: bold;
+            color: #374151;
+            margin-bottom: 15px;
+            text-align: center;
+            width: 100%;
+        }
+        .network-container {
+            position: relative;
+            min-height: 400px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+        .network-process {
+            background: #3b82f6;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            position: relative;
+            margin: 10px;
+        }
+        .network-process.core { background: #10b981; }
+        .network-process.support { background: #f59e0b; }
+        .network-process.management { background: #8b5cf6; }
+        .network-connections {
+            margin-top: 8px;
+            font-size: 10px;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+        .connection-arrow {
+            color: #374151;
+            font-size: 12px;
+            margin: 2px 0;
+        }
         .flow-container { 
             position: relative; 
             min-height: 300px; 
@@ -272,14 +325,21 @@ function generateStyledReport(processData: any, industry: string): string {
 
     ${interactions.length > 0 ? `
     <div class="section">
-        <h3>Process Flow Diagram</h3>
+        <h3>Process Hierarchy & Network</h3>
         <div class="process-flow">
-            ${generateProcessFlowHtml(processes, interactions)}
+            ${generateProcessHierarchyHtml(processes)}
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Process Interaction Network</h3>
+        <div class="process-flow">
+            ${generateProcessNetworkHtml(processes, interactions)}
         </div>
     </div>
 
     <div class="section interactions">
-        <h3>Process Interactions</h3>
+        <h3>Detailed Process Interactions</h3>
         ${interactions.map((interaction: any) => `
             <div class="interaction-item">
                 <strong>${interaction.from}</strong> → <strong>${interaction.to}</strong>
@@ -374,6 +434,128 @@ function generateProcessFlowHtml(processes: any[], interactions: any[]): string 
       <div class="flow-legend-item">
         <div class="flow-legend-box" style="background: #8b5cf6;"></div>
         <span>Management Processes</span>
+      </div>
+    </div>
+  `;
+
+  return html;
+}
+
+function generateProcessHierarchyHtml(processes: any[]): string {
+  const coreProcesses = processes.filter(p => p.category === 'core');
+  const supportProcesses = processes.filter(p => p.category === 'support');
+  const managementProcesses = processes.filter(p => p.category === 'management');
+
+  let html = '<div class="hierarchy-container">';
+
+  // Management processes at the top
+  if (managementProcesses.length > 0) {
+    html += `
+      <div class="hierarchy-level">
+        <div class="hierarchy-title">Management Processes</div>
+        ${managementProcesses.map(process => `
+          <div class="flow-process management">${process.name}</div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // Arrows pointing down
+  if (managementProcesses.length > 0 && coreProcesses.length > 0) {
+    html += '<div style="font-size: 24px; color: #6b7280;">⬇️</div>';
+  }
+
+  // Core processes in the middle
+  if (coreProcesses.length > 0) {
+    html += `
+      <div class="hierarchy-level">
+        <div class="hierarchy-title">Core Processes</div>
+        ${coreProcesses.map(process => `
+          <div class="flow-process core">${process.name}</div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  // Arrows pointing to support
+  if (coreProcesses.length > 0 && supportProcesses.length > 0) {
+    html += '<div style="font-size: 24px; color: #6b7280;">⬇️</div>';
+  }
+
+  // Support processes at the bottom
+  if (supportProcesses.length > 0) {
+    html += `
+      <div class="hierarchy-level">
+        <div class="hierarchy-title">Support Processes</div>
+        ${supportProcesses.map(process => `
+          <div class="flow-process support">${process.name}</div>
+        `).join('')}
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function generateProcessNetworkHtml(processes: any[], interactions: any[]): string {
+  // Create network view showing all processes with their connections
+  let html = '<div class="network-container">';
+
+  processes.forEach(process => {
+    // Find incoming and outgoing connections
+    const incomingConnections = interactions
+      .filter(i => i.to === process.name)
+      .map(i => i.from);
+    
+    const outgoingConnections = interactions
+      .filter(i => i.from === process.name)
+      .map(i => i.to);
+
+    html += `
+      <div class="network-process ${process.category}">
+        <div>${process.name}</div>
+        
+        ${incomingConnections.length > 0 ? `
+          <div class="network-connections">
+            <div style="font-weight: bold; margin-bottom: 4px;">Inputs from:</div>
+            ${incomingConnections.map(conn => `
+              <div class="connection-arrow">← ${conn}</div>
+            `).join('')}
+          </div>
+        ` : ''}
+        
+        ${outgoingConnections.length > 0 ? `
+          <div class="network-connections">
+            <div style="font-weight: bold; margin-bottom: 4px;">Outputs to:</div>
+            ${outgoingConnections.map(conn => `
+              <div class="connection-arrow">→ ${conn}</div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  });
+
+  html += '</div>';
+
+  // Add network legend
+  html += `
+    <div class="flow-legend">
+      <div class="flow-legend-item">
+        <div class="flow-legend-box" style="background: #10b981;"></div>
+        <span>Core Processes</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-box" style="background: #f59e0b;"></div>
+        <span>Support Processes</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-box" style="background: #8b5cf6;"></div>
+        <span>Management Processes</span>
+      </div>
+      <div class="flow-legend-item">
+        <span style="font-size: 12px;">← Inputs | Outputs →</span>
       </div>
     </div>
   `;
