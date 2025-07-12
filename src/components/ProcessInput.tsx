@@ -38,12 +38,6 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
     if (industry.trim()) {
       const foundBenchmark = getIndustryBenchmark(industry);
       setBenchmark(foundBenchmark);
-      if (foundBenchmark && !coreProcesses.trim()) {
-        // Auto-suggest some core processes
-        const suggested = foundBenchmark.commonProcesses.core.slice(0, 4);
-        setSelectedBenchmarkProcesses(suggested);
-        onCoreProcessesChange(suggested.join('\n'));
-      }
     } else {
       setBenchmark(null);
       setSelectedBenchmarkProcesses([]);
