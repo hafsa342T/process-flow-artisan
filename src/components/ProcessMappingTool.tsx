@@ -33,6 +33,18 @@ export interface ProcessInteraction {
 export interface ProcessMappingData {
   processes: ProcessData[];
   interactions: ProcessInteraction[];
+  processFlow?: {
+    primaryFlow: string[];
+    supportingFlows: Array<{
+      name: string;
+      processes: string[];
+    }>;
+    feedbackLoops: Array<{
+      from: string;
+      to: string;
+      description: string;
+    }>;
+  };
 }
 
 export const ProcessMappingTool: React.FC = () => {
@@ -42,59 +54,90 @@ export const ProcessMappingTool: React.FC = () => {
   const [generatedData, setGeneratedData] = useState<ProcessMappingData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (apiKey?: string) => {
     if (!industry.trim() || !coreProcesses.trim()) return;
     
     setIsGenerating(true);
     
-    // Simulate AI generation - replace with actual AI call
-    setTimeout(() => {
-      const mockData: ProcessMappingData = {
-        processes: [
-          {
-            id: '1',
-            name: 'Purchasing',
-            category: 'core',
-            inputs: ['Supplier catalogs', 'Purchase requests', 'Quality specs'],
-            outputs: ['Purchase orders', 'Supplier agreements', 'Materials'],
-            risk: 'Poor supplier quality leading to production delays',
-            kpi: 'Supplier quality rating (%)',
-            owner: 'Purchasing Manager',
-            isoClauses: ['8.4.1', '8.4.2', '8.4.3']
-          },
-          {
-            id: '2',
-            name: 'Production',
-            category: 'core',
-            inputs: ['Raw materials', 'Work orders', 'Quality standards'],
-            outputs: ['Finished products', 'Production reports', 'Quality records'],
-            risk: 'Equipment failure causing production downtime',
-            kpi: 'Overall Equipment Effectiveness (%)',
-            owner: 'Production Manager',
-            isoClauses: ['8.5.1', '8.5.2', '8.5.3']
-          },
-          {
-            id: '3',
-            name: 'Customer Service',
-            category: 'support',
-            inputs: ['Customer inquiries', 'Order status', 'Product information'],
-            outputs: ['Order confirmations', 'Customer feedback', 'Issue resolutions'],
-            risk: 'Delayed response to customer complaints',
-            kpi: 'Customer satisfaction score',
-            owner: 'Customer Service Manager',
-            isoClauses: ['9.1.2', '10.2.1']
-          }
-        ],
-        interactions: [
-          { from: 'Purchasing', to: 'Production', description: 'Materials supply' },
-          { from: 'Production', to: 'Customer Service', description: 'Product delivery' }
-        ]
-      };
+    try {
+      // Import AI service dynamically to avoid issues
+      const { aiService } = await import('@/services/aiService');
+      const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
       
-      setGeneratedData(mockData);
+      let processData: ProcessMappingData;
+      
+      if (apiKey) {
+        // Use AI service with real API
+        processData = await aiService.generateProcessMap(industry, coreProcesses, apiKey);
+      } else {
+        // Use benchmark data as fallback
+        const benchmark = getIndustryBenchmark(industry);
+        processData = generateBenchmarkProcessMap(industry, coreProcesses, benchmark);
+      }
+      
+      setGeneratedData(processData);
       setCurrentStep('generated');
+    } catch (error) {
+      console.error('Generation error:', error);
+      // Fallback to benchmark data on error
+      const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
+      const benchmark = getIndustryBenchmark(industry);
+      const fallbackData = generateBenchmarkProcessMap(industry, coreProcesses, benchmark);
+      setGeneratedData(fallbackData);
+      setCurrentStep('generated');
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
+  };
+
+  const generateBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
+    const userProcessList = userProcesses.split('\n').filter(p => p.trim());
+    const allProcesses = [...userProcessList];
+    
+    // Add benchmark processes if available
+    if (benchmark) {
+      // Add some core processes not mentioned by user
+      benchmark.commonProcesses.core.forEach((process: string) => {
+        if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
+          allProcesses.push(process);
+        }
+      });
+      
+      // Add key support processes
+      allProcesses.push(...benchmark.commonProcesses.support.slice(0, 3));
+      allProcesses.push(...benchmark.commonProcesses.management.slice(0, 2));
+    }
+
+    const processes: ProcessData[] = allProcesses.map((name, index) => {
+      const category = benchmark?.commonProcesses.core.includes(name) ? 'core' :
+                     benchmark?.commonProcesses.support.includes(name) ? 'support' : 
+                     benchmark?.commonProcesses.management.includes(name) ? 'management' : 'core';
+      
+      return {
+        id: String(index + 1),
+        name,
+        category,
+        inputs: [`${name} inputs`, 'Requirements', 'Resources'],
+        outputs: [`${name} outputs`, 'Deliverables', 'Reports'],
+        risk: benchmark?.industryRisks[index % (benchmark.industryRisks.length || 1)] || 'Process failure risk',
+        kpi: benchmark?.commonKPIs[index % (benchmark.commonKPIs.length || 1)] || 'Process performance metric',
+        owner: `${name} Manager`,
+        isoClauses: ['8.1', '8.2', '9.1']
+      };
+    });
+
+    const interactions: ProcessInteraction[] = [];
+    for (let i = 0; i < processes.length - 1; i++) {
+      if (processes[i].category === 'core' && processes[i + 1].category === 'core') {
+        interactions.push({
+          from: processes[i].name,
+          to: processes[i + 1].name,
+          description: 'Process output feeds next process'
+        });
+      }
+    }
+
+    return { processes, interactions };
   };
 
   const handleEdit = () => {

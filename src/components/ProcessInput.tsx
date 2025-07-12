@@ -1,17 +1,20 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Brain, Building2, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Brain, Building2, Loader2, Lightbulb, Key, Plus, X } from 'lucide-react';
+import { getIndustryBenchmark, IndustryBenchmark } from '@/data/industryBenchmarks';
 
 interface ProcessInputProps {
   industry: string;
   coreProcesses: string;
   onIndustryChange: (value: string) => void;
   onCoreProcessesChange: (value: string) => void;
-  onGenerate: () => void;
+  onGenerate: (apiKey?: string) => void;
   isGenerating: boolean;
 }
 
@@ -23,64 +26,143 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
   onGenerate,
   isGenerating
 }) => {
+  const [apiKey, setApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [benchmark, setBenchmark] = useState<IndustryBenchmark | null>(null);
+  const [selectedBenchmarkProcesses, setSelectedBenchmarkProcesses] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (industry.trim()) {
+      const foundBenchmark = getIndustryBenchmark(industry);
+      setBenchmark(foundBenchmark);
+      if (foundBenchmark && !coreProcesses.trim()) {
+        // Auto-suggest some core processes
+        const suggested = foundBenchmark.commonProcesses.core.slice(0, 4);
+        setSelectedBenchmarkProcesses(suggested);
+        onCoreProcessesChange(suggested.join('\n'));
+      }
+    } else {
+      setBenchmark(null);
+      setSelectedBenchmarkProcesses([]);
+    }
+  }, [industry]);
+
+  const handleAddBenchmarkProcess = (process: string) => {
+    if (!selectedBenchmarkProcesses.includes(process)) {
+      const updated = [...selectedBenchmarkProcesses, process];
+      setSelectedBenchmarkProcesses(updated);
+      onCoreProcessesChange(updated.join('\n'));
+    }
+  };
+
+  const handleRemoveBenchmarkProcess = (process: string) => {
+    const updated = selectedBenchmarkProcesses.filter(p => p !== process);
+    setSelectedBenchmarkProcesses(updated);
+    onCoreProcessesChange(updated.join('\n'));
+  };
+
+  const handleGenerate = () => {
+    onGenerate(apiKey || undefined);
+  };
+
   const canGenerate = industry.trim() && coreProcesses.trim();
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="max-w-6xl mx-auto space-y-8 animate-fade-in">
       {/* Welcome Section */}
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-3 p-4 bg-primary-light rounded-xl">
-          <Brain className="h-8 w-8 text-primary" />
+        <div className="inline-flex items-center gap-3 p-6 bg-gradient-to-r from-primary-light to-accent-light rounded-xl animate-pulse-glow">
+          <Brain className="h-10 w-10 text-primary" />
           <div className="text-left">
-            <h2 className="text-xl font-semibold text-primary">AI-Powered Process Generation</h2>
-            <p className="text-sm text-primary/80">Enter minimal information to generate complete ISO 9001 process documentation</p>
+            <h2 className="text-2xl font-bold text-primary">AI-Powered Process Generation</h2>
+            <p className="text-primary/80">Industry benchmarks + AI analysis = Comprehensive ISO 9001 documentation</p>
           </div>
         </div>
       </div>
 
-      {/* Input Form */}
-      <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-card/80">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl flex items-center gap-2 justify-center">
-            <Building2 className="h-6 w-6 text-primary" />
-            Process Information
+      {/* API Key Configuration */}
+      <Card className="border-warning/30 bg-warning/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-warning">
+            <Key className="h-5 w-5" />
+            AI Configuration
           </CardTitle>
-          <CardDescription className="text-base">
-            Provide your industry and core processes to generate comprehensive ISO 9001 documentation
+          <CardDescription>
+            For best results, provide your Perplexity API key to access real-time industry insights
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="industry" className="text-sm font-medium">Industry or Sector</Label>
-            <Input
-              id="industry"
-              placeholder="e.g., Food Manufacturing, Software Development, Healthcare Services"
-              value={industry}
-              onChange={(e) => onIndustryChange(e.target.value)}
-              className="h-12 text-base"
-            />
-            <p className="text-xs text-muted-foreground">
-              Specify your industry to get relevant process recommendations
-            </p>
+        <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <Input
+                type={showApiKey ? "text" : "password"}
+                placeholder="pplx-xxxxxxxxxxxxxxxxxxxx"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="font-mono"
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowApiKey(!showApiKey)}
+            >
+              {showApiKey ? 'Hide' : 'Show'}
+            </Button>
           </div>
+          <Alert>
+            <Lightbulb className="h-4 w-4" />
+            <AlertDescription>
+              Without an API key, the tool will use comprehensive industry benchmarks. 
+              With Perplexity AI, you'll get current industry trends and enhanced process mapping.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
 
-          <div className="space-y-2">
-            <Label htmlFor="processes" className="text-sm font-medium">Core Processes (1-7 items)</Label>
-            <Textarea
-              id="processes"
-              placeholder="List your main processes, e.g.:&#10;Purchasing&#10;Production&#10;Customer Service&#10;Quality Control"
-              value={coreProcesses}
-              onChange={(e) => onCoreProcessesChange(e.target.value)}
-              className="min-h-[120px] text-base resize-none"
-            />
-            <p className="text-xs text-muted-foreground">
-              List each process on a new line or separate with commas
-            </p>
-          </div>
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Input Form */}
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-card to-card/80">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Building2 className="h-6 w-6 text-primary" />
+              Industry & Process Information
+            </CardTitle>
+            <CardDescription>
+              Start with your industry to get relevant benchmarks and suggestions
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="industry" className="text-sm font-medium">Industry or Sector</Label>
+              <Input
+                id="industry"
+                placeholder="e.g., Manufacturing, Software Development, Healthcare"
+                value={industry}
+                onChange={(e) => onIndustryChange(e.target.value)}
+                className="h-12 text-base"
+              />
+              <p className="text-xs text-muted-foreground">
+                Be specific for better benchmark matching
+              </p>
+            </div>
 
-          <div className="pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="processes" className="text-sm font-medium">Your Processes</Label>
+              <Textarea
+                id="processes"
+                placeholder="Add processes from suggestions or enter your own..."
+                value={coreProcesses}
+                onChange={(e) => {
+                  onCoreProcessesChange(e.target.value);
+                  setSelectedBenchmarkProcesses(e.target.value.split('\n').filter(p => p.trim()));
+                }}
+                className="min-h-[200px] text-base resize-none"
+              />
+            </div>
+
             <Button 
-              onClick={onGenerate}
+              onClick={handleGenerate}
               disabled={!canGenerate || isGenerating}
               className="w-full h-12 text-base font-medium"
               variant="professional"
@@ -88,7 +170,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
               {isGenerating ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Generating Process Map...
+                  Generating Comprehensive Process Map...
                 </>
               ) : (
                 <>
@@ -97,39 +179,136 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
                 </>
               )}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* Industry Benchmarks */}
+        {benchmark && (
+          <Card className="shadow-lg border-accent/30 bg-gradient-to-br from-accent-light/20 to-accent-light/10 animate-scale-in">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Lightbulb className="h-6 w-6 text-accent" />
+                {benchmark.industry} Benchmarks
+              </CardTitle>
+              <CardDescription>
+                Industry-standard processes based on best practices
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              
+              {/* Core Processes */}
+              <div>
+                <h4 className="font-medium text-sm mb-3 text-process-core">CORE PROCESSES</h4>
+                <div className="grid gap-2 max-h-48 overflow-y-auto">
+                  {benchmark.commonProcesses.core.map((process, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-card rounded border">
+                      <span className="text-sm">{process}</span>
+                      {selectedBenchmarkProcesses.includes(process) ? (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleRemoveBenchmarkProcess(process)}
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleAddBenchmarkProcess(process)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Support Processes Preview */}
+              <div>
+                <h4 className="font-medium text-sm mb-2 text-process-support">SUPPORT PROCESSES</h4>
+                <div className="flex flex-wrap gap-1">
+                  {benchmark.commonProcesses.support.slice(0, 4).map((process, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">
+                      {process}
+                    </Badge>
+                  ))}
+                  <Badge variant="outline" className="text-xs">
+                    +{benchmark.commonProcesses.support.length - 4} more
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Management Processes Preview */}
+              <div>
+                <h4 className="font-medium text-sm mb-2 text-process-management">MANAGEMENT PROCESSES</h4>
+                <div className="flex flex-wrap gap-1">
+                  {benchmark.commonProcesses.management.slice(0, 3).map((process, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">
+                      {process}
+                    </Badge>
+                  ))}
+                  <Badge variant="outline" className="text-xs">
+                    +{benchmark.commonProcesses.management.length - 3} more
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Industry Insights */}
+              <div className="pt-4 border-t">
+                <h4 className="font-medium text-sm mb-2">Industry Insights</h4>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p><strong>Common Risks:</strong> {benchmark.industryRisks.slice(0, 2).join(', ')}</p>
+                  <p><strong>Key KPIs:</strong> {benchmark.commonKPIs.slice(0, 2).join(', ')}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Feature Preview */}
-      <div className="grid md:grid-cols-3 gap-6">
-        <Card className="border-accent/20 bg-accent-light/30">
+      <div className="grid md:grid-cols-4 gap-4">
+        <Card className="border-accent/20 bg-accent-light/30 hover:shadow-lg transition-shadow">
           <CardContent className="p-4 text-center">
             <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center mx-auto mb-2">
               <Brain className="h-4 w-4 text-accent" />
             </div>
             <h3 className="font-medium text-sm mb-1">AI Analysis</h3>
-            <p className="text-xs text-muted-foreground">Intelligent process categorization and risk assessment</p>
+            <p className="text-xs text-muted-foreground">Real-time industry trends and process optimization</p>
           </CardContent>
         </Card>
         
-        <Card className="border-primary/20 bg-primary-light/30">
+        <Card className="border-primary/20 bg-primary-light/30 hover:shadow-lg transition-shadow">
           <CardContent className="p-4 text-center">
             <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
               <Building2 className="h-4 w-4 text-primary" />
+            </div>
+            <h3 className="font-medium text-sm mb-1">Benchmark Data</h3>
+            <p className="text-xs text-muted-foreground">Industry-standard processes and best practices</p>
+          </CardContent>
+        </Card>
+        
+        <Card className="border-success/20 bg-success/10 hover:shadow-lg transition-shadow">
+          <CardContent className="p-4 text-center">
+            <div className="w-8 h-8 bg-success/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Building2 className="h-4 w-4 text-success" />
             </div>
             <h3 className="font-medium text-sm mb-1">ISO Compliance</h3>
             <p className="text-xs text-muted-foreground">Automatic mapping to ISO 9001:2015 clauses</p>
           </CardContent>
         </Card>
-        
-        <Card className="border-success/20 bg-success/10">
+
+        <Card className="border-warning/20 bg-warning/10 hover:shadow-lg transition-shadow">
           <CardContent className="p-4 text-center">
-            <div className="w-8 h-8 bg-success/20 rounded-lg flex items-center justify-center mx-auto mb-2">
-              <Building2 className="h-4 w-4 text-success" />
+            <div className="w-8 h-8 bg-warning/20 rounded-lg flex items-center justify-center mx-auto mb-2">
+              <Lightbulb className="h-4 w-4 text-warning" />
             </div>
-            <h3 className="font-medium text-sm mb-1">Export Ready</h3>
-            <p className="text-xs text-muted-foreground">Professional documentation for audits</p>
+            <h3 className="font-medium text-sm mb-1">Process Flow</h3>
+            <p className="text-xs text-muted-foreground">Detailed interaction mapping and dependencies</p>
           </CardContent>
         </Card>
       </div>
