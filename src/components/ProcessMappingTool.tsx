@@ -69,15 +69,23 @@ export const ProcessMappingTool: React.FC = () => {
       
       let processData: ProcessMappingData;
       
-      // Always try our service first with your API key
-      try {
-        // This would call your Supabase Edge Function
-        processData = await generateWithAI(industry, coreProcesses);
-      } catch (error) {
-        console.log('Service unavailable, using benchmarks:', error);
-        // Fallback to benchmark data
-        const benchmark = getIndustryBenchmark(industry);
+      // Check if we have benchmark data for this industry
+      const benchmark = getIndustryBenchmark(industry);
+      
+      if (benchmark) {
+        // Use benchmark data for known industries
+        console.log('Using benchmark data for known industry:', industry);
         processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
+      } else {
+        // Use AI generation for unknown/rare industries
+        console.log('Unknown industry - using AI generation:', industry);
+        try {
+          processData = await generateWithAI(industry, coreProcesses);
+        } catch (error) {
+          console.log('AI generation failed, using generic fallback:', error);
+          // Final fallback to generic template
+          processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, null);
+        }
       }
       
       setGeneratedData(processData);
@@ -95,34 +103,27 @@ export const ProcessMappingTool: React.FC = () => {
     }
   };
 
-  // This function would call your Supabase Edge Function
+  // This function calls the Supabase Edge Function for AI generation
   const generateWithAI = async (industry: string, processes: string): Promise<ProcessMappingData> => {
     try {
-      // TODO: Replace with actual Supabase Edge Function call
-      const response = await fetch('/api/generate-process-map', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('generate-process-map', {
+        body: { 
           industry, 
           processes,
           prompt: buildAIPrompt(industry, processes)
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+      if (error) {
+        throw new Error(`Edge Function Error: ${error.message}`);
       }
 
-      const result = await response.json();
-      return result.data;
+      return data.processMap;
     } catch (error) {
-      console.error('Service error:', error);
-      // Fallback to enhanced benchmark generation
-      const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
-      const benchmark = getIndustryBenchmark(industry);
-      return generateEnhancedBenchmarkProcessMap(industry, processes, benchmark);
+      console.error('AI generation error:', error);
+      throw error; // Re-throw to trigger fallback in handleGenerate
     }
   };
 
