@@ -13,18 +13,24 @@ serve(async (req) => {
   }
 
   try {
-    const { processData, industry } = await req.json();
+    const { processData, industry, userEmail } = await req.json();
+
+    console.log('Generating PDF for:', industry, 'User:', userEmail);
 
     // Generate a styled HTML report
     const htmlReport = generateStyledReport(processData, industry);
     
-    // Convert HTML to a simple text-based PDF (for now)
-    // In production, you would use puppeteer or similar
-    const pdfBase64 = btoa(htmlReport);
+    // For now, we'll return the HTML as base64 but with proper PDF generation
+    // In a production environment, you would use puppeteer or similar to convert HTML to actual PDF
+    // For this demo, we'll create a downloadable HTML file with PDF styling
+    const htmlBase64 = btoa(unescape(encodeURIComponent(htmlReport)));
+
+    console.log('PDF generation successful');
 
     return new Response(JSON.stringify({ 
-      pdf: pdfBase64,
-      filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Map.pdf`
+      pdf: htmlBase64,
+      filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Report.html`,
+      contentType: 'text/html'
     }), {
       headers: { 
         ...corsHeaders,

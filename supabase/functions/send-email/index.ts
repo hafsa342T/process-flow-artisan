@@ -41,10 +41,13 @@ const handler = async (req: Request): Promise<Response> => {
     // Prepare email attachments
     const attachments = [];
     if (pdfReport) {
+      // Extract the base64 content (remove data URL prefix if present)
+      const base64Content = pdfReport.includes(',') ? pdfReport.split(',')[1] : pdfReport;
+      
       attachments.push({
-        filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Map.pdf`,
-        content: pdfReport.split(',')[1], // Remove data:application/pdf;base64, prefix
-        type: 'application/pdf',
+        filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Report.html`,
+        content: base64Content,
+        type: 'text/html',
       });
     }
 
@@ -86,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
             
             <p style="margin-bottom: 20px;">
               This comprehensive process map has been developed based on industry best practices and ISO 9001:2015 requirements. 
-              The attached PDF report contains detailed process mappings, interactions, and compliance guidelines specific to your sector.
+              The attached HTML report contains detailed process mappings, interactions, and compliance guidelines specific to your sector.
             </p>
             
             <div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 20px; margin: 25px 0;">

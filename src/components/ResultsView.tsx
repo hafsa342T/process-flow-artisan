@@ -122,17 +122,22 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 
   const downloadPDF = async () => {
     try {
-      toast('Generating PDF report...', { duration: 2000 });
+      toast('Generating report...', { duration: 2000 });
       
       const { data: pdfData, error } = await supabase.functions.invoke('generate-pdf-report', {
-        body: { processData: data, industry, userEmail: 'user@example.com' }
+        body: { processData: data, industry, userEmail }
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('PDF generation error:', error);
+        throw error;
+      }
       
-      // Create and download the PDF file
-      const pdfBlob = base64ToBlob(pdfData.pdf, 'application/pdf');
-      const url = URL.createObjectURL(pdfBlob);
+      console.log('PDF data received:', pdfData);
+      
+      // Create and download the HTML file
+      const htmlBlob = base64ToBlob(pdfData.pdf, 'text/html');
+      const url = URL.createObjectURL(htmlBlob);
       const a = document.createElement('a');
       a.href = url;
       a.download = pdfData.filename;
@@ -141,10 +146,10 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      toast('PDF report downloaded successfully!');
+      toast('Report downloaded successfully!');
     } catch (error) {
-      console.error('Error downloading PDF:', error);
-      toast('Failed to generate PDF report. Please try again.');
+      console.error('Error downloading report:', error);
+      toast('Failed to generate report. Please try again.');
     }
   };
 
