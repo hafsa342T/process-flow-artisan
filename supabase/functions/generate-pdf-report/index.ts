@@ -153,6 +153,59 @@ function generateStyledReport(processData: any, industry: string): string {
             border-radius: 8px; 
             margin: 30px 0;
         }
+        .process-flow { 
+            background: #f8fafc; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 8px; 
+            padding: 20px; 
+            overflow-x: auto;
+        }
+        .flow-container { 
+            position: relative; 
+            min-height: 300px; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 20px; 
+            justify-content: center;
+        }
+        .flow-process { 
+            background: #3b82f6; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 8px; 
+            min-width: 120px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 12px; 
+            position: relative;
+        }
+        .flow-process.core { background: #10b981; }
+        .flow-process.support { background: #f59e0b; }
+        .flow-process.management { background: #8b5cf6; }
+        .flow-arrow { 
+            color: #6b7280; 
+            margin: 0 10px; 
+            font-size: 18px; 
+            align-self: center;
+        }
+        .flow-legend { 
+            margin-top: 15px; 
+            display: flex; 
+            gap: 20px; 
+            justify-content: center; 
+            flex-wrap: wrap;
+        }
+        .flow-legend-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 12px;
+        }
+        .flow-legend-box { 
+            width: 20px; 
+            height: 15px; 
+            border-radius: 3px;
+        }
         .footer { 
             text-align: center; 
             margin-top: 40px; 
@@ -218,6 +271,13 @@ function generateStyledReport(processData: any, industry: string): string {
     </div>
 
     ${interactions.length > 0 ? `
+    <div class="section">
+        <h3>Process Flow Diagram</h3>
+        <div class="process-flow">
+            ${generateProcessFlowHtml(processes, interactions)}
+        </div>
+    </div>
+
     <div class="section interactions">
         <h3>Process Interactions</h3>
         ${interactions.map((interaction: any) => `
@@ -235,4 +295,88 @@ function generateStyledReport(processData: any, industry: string): string {
 </body>
 </html>
   `;
+}
+
+function generateProcessFlowHtml(processes: any[], interactions: any[]): string {
+  // Create a simple flow visualization showing process connections
+  const processMap = new Map();
+  processes.forEach((process, index) => {
+    processMap.set(process.name, { ...process, index });
+  });
+
+  // Build flow chains based on interactions
+  const flowChains: string[][] = [];
+  const visited = new Set();
+
+  interactions.forEach((interaction) => {
+    if (!visited.has(interaction.from)) {
+      const chain = [interaction.from];
+      let current = interaction.from;
+      
+      // Follow the chain of interactions
+      while (true) {
+        const nextInteraction = interactions.find(i => i.from === current && !chain.includes(i.to));
+        if (nextInteraction) {
+          chain.push(nextInteraction.to);
+          current = nextInteraction.to;
+        } else {
+          break;
+        }
+      }
+      
+      chain.forEach(processName => visited.add(processName));
+      if (chain.length > 1) {
+        flowChains.push(chain);
+      }
+    }
+  });
+
+  // Add standalone processes that aren't in any flow
+  const standaloneProcesses = processes
+    .filter(p => !visited.has(p.name))
+    .map(p => [p.name]);
+
+  const allChains = [...flowChains, ...standaloneProcesses];
+
+  let html = '<div class="flow-container">';
+  
+  allChains.forEach((chain, chainIndex) => {
+    if (chainIndex > 0) html += '<div style="width: 100%; height: 20px;"></div>';
+    
+    html += '<div style="display: flex; align-items: center; flex-wrap: wrap; justify-content: center;">';
+    
+    chain.forEach((processName, index) => {
+      const process = processMap.get(processName);
+      if (process) {
+        html += `<div class="flow-process ${process.category}">${processName}</div>`;
+        if (index < chain.length - 1) {
+          html += '<div class="flow-arrow">→</div>';
+        }
+      }
+    });
+    
+    html += '</div>';
+  });
+
+  html += '</div>';
+
+  // Add legend
+  html += `
+    <div class="flow-legend">
+      <div class="flow-legend-item">
+        <div class="flow-legend-box" style="background: #10b981;"></div>
+        <span>Core Processes</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-box" style="background: #f59e0b;"></div>
+        <span>Support Processes</span>
+      </div>
+      <div class="flow-legend-item">
+        <div class="flow-legend-box" style="background: #8b5cf6;"></div>
+        <span>Management Processes</span>
+      </div>
+    </div>
+  `;
+
+  return html;
 }
