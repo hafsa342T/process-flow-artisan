@@ -157,18 +157,18 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
     try {
       toast('Generating process diagram...', { duration: 2000 });
       
-      const { data: pngData, error } = await supabase.functions.invoke('generate-png-diagram', {
+      const { data: svgData, error } = await supabase.functions.invoke('generate-png-diagram', {
         body: { processData: data, industry }
       });
       
       if (error) throw error;
       
-      // Create and download the PNG file
-      const pngBlob = base64ToBlob(pngData.png, 'image/png');
-      const url = URL.createObjectURL(pngBlob);
+      // Create and download the SVG file
+      const svgBlob = base64ToBlob(svgData.svg, 'image/svg+xml');
+      const url = URL.createObjectURL(svgBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = pngData.filename;
+      a.download = svgData.filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
