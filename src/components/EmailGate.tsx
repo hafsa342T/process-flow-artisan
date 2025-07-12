@@ -46,16 +46,37 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
   const sendReportEmail = async (email: string, data: ProcessMappingData, industry: string) => {
     const { supabase } = await import('@/integrations/supabase/client');
     
-    const { data: result, error } = await supabase.functions.invoke('send-email', {
-      body: { email, processData: data, industry }
-    });
-    
-    if (error) {
-      console.error('Supabase function error:', error);
-      throw new Error('Failed to send email');
+    try {
+      // First generate the PDF report
+      const { data: pdfData, error: pdfError } = await supabase.functions.invoke('generate-pdf-report', {
+        body: { processData: data, industry, userEmail: email }
+      });
+      
+      if (pdfError) {
+        console.error('PDF generation error:', pdfError);
+        throw new Error('Failed to generate PDF report');
+      }
+      
+      // Then send the email with the PDF attached
+      const { data: result, error } = await supabase.functions.invoke('send-email', {
+        body: { 
+          email, 
+          processData: data, 
+          industry,
+          pdfReport: pdfData.pdf // Pass the generated PDF as base64
+        }
+      });
+      
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw new Error('Failed to send email');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error in sendReportEmail:', error);
+      throw error;
     }
-    
-    return result;
   };
 
   if (isSubmitted) {

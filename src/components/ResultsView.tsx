@@ -13,7 +13,8 @@ import {
   CheckCircle,
   Clock,
   Shield,
-  TrendingUp
+  TrendingUp,
+  RotateCcw
 } from 'lucide-react';
 import { ProcessMappingData } from './ProcessMappingTool';
 import { ProcessList } from './ProcessList';
@@ -26,13 +27,15 @@ interface ResultsViewProps {
   industry: string;
   userEmail: string;
   onBack: () => void;
+  onStartOver: () => void;
 }
 
 export const ResultsView: React.FC<ResultsViewProps> = ({ 
   data, 
   industry, 
   userEmail, 
-  onBack 
+  onBack,
+  onStartOver 
 }) => {
   const [downloading, setDownloading] = useState<string | null>(null);
 
@@ -188,6 +191,11 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                 <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
                   <ArrowLeft className="h-4 w-4" />
                   Back
+                </Button>
+                <div className="h-4 w-px bg-border" />
+                <Button variant="ghost" size="sm" onClick={onStartOver} className="gap-2">
+                  <RotateCcw className="h-4 w-4" />
+                  Try Another
                 </Button>
                 <div className="h-4 w-px bg-border" />
                 <Badge variant="secondary" className="gap-1">

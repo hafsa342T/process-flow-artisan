@@ -417,6 +417,14 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     setGeneratedData(updatedData);
   };
 
+  const handleStartOver = () => {
+    setCurrentStep('input');
+    setIndustry('');
+    setCoreProcesses('');
+    setGeneratedData(null);
+    setUserEmail('');
+  };
+
   const handleEmailSubmitted = (email: string) => {
     setUserEmail(email);
     setCurrentStep('results');
@@ -533,6 +541,7 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
             industry={industry}
             userEmail={userEmail}
             onBack={handleBackToEmailGate}
+            onStartOver={handleStartOver}
           />
         )}
         {currentStep === 'editing' && generatedData && (
