@@ -139,15 +139,29 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="industry" className="text-sm font-medium">Industry or Sector</Label>
-              <Input
-                id="industry"
-                placeholder="e.g., Dental Clinic, Restaurant, Law Firm"
-                value={industry}
-                onChange={(e) => onIndustryChange(e.target.value)}
-                className="h-12 text-base"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="industry"
+                  placeholder="e.g., Dental Clinic, Restaurant, Law Firm"
+                  value={industry}
+                  onChange={(e) => onIndustryChange(e.target.value)}
+                  className="h-12 text-base flex-1"
+                />
+                <Button
+                  onClick={handleGetAiSuggestions}
+                  disabled={!industry.trim() || isLoadingAiSuggestions}
+                  variant="outline"
+                  className="h-12 px-4"
+                >
+                  {isLoadingAiSuggestions ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Be specific for better benchmark matching.
+                Be specific for better results. Click the sparkle button to get industry-specific processes.
               </p>
             </div>
 
@@ -186,8 +200,54 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
           </CardContent>
         </Card>
 
+        {/* AI Suggestions */}
+        {showAiSuggestions && aiSuggestions.length > 0 && (
+          <Card className="shadow-lg border-primary/30 bg-gradient-to-br from-primary-light/20 to-primary-light/10 animate-scale-in">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                Suggested Processes for {industry}
+              </CardTitle>
+              <CardDescription>
+                Industry-specific processes tailored for your business. Select the ones relevant to your needs.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h4 className="font-medium text-sm mb-3 text-primary">SUGGESTED PROCESSES</h4>
+                <div className="grid gap-2 max-h-64 overflow-y-auto">
+                  {aiSuggestions.map((process, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-card rounded border">
+                      <span className="text-sm">{process}</span>
+                      {selectedBenchmarkProcesses.includes(process) ? (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleRemoveAiSuggestion(process)}
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleAddAiSuggestion(process)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Industry Benchmarks */}
-        {benchmark && (
+        {benchmark && !showAiSuggestions && (
           <Card className="shadow-lg border-accent/30 bg-gradient-to-br from-accent-light/20 to-accent-light/10 animate-scale-in">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
