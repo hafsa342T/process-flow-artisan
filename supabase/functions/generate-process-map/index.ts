@@ -1,0 +1,116 @@
+// Supabase Edge Function for AI-powered process mapping
+// This would be deployed as a Supabase Edge Function
+
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+
+serve(async (req) => {
+  try {
+    const { industry, processes, prompt } = await req.json()
+    
+    // Get the API key from Supabase secrets
+    const apiKey = Deno.env.get('PERPLEXITY_API_KEY') || Deno.env.get('OPENAI_API_KEY')
+    
+    if (!apiKey) {
+      throw new Error('AI API key not configured in Supabase secrets')
+    }
+
+    // Use Perplexity AI for real-time industry knowledge
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-sonar-large-128k-online',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an ISO 9001:2015 process mapping expert. Generate comprehensive process documentation in JSON format. Always include benchmark industry processes even if not mentioned by the user. Focus on realistic process interactions and flows.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.2,
+        top_p: 0.9,
+        max_tokens: 4000,
+        return_images: false,
+        return_related_questions: false,
+        search_recency_filter: 'month',
+        frequency_penalty: 1,
+        presence_penalty: 0
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`AI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content
+
+    if (!content) {
+      throw new Error('No content received from AI API')
+    }
+
+    // Parse and validate the JSON response
+    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error('No JSON found in AI response')
+    }
+
+    const parsed = JSON.parse(jsonMatch[0])
+    
+    // Validate and format the response
+    const processData = {
+      processes: parsed.processes?.map((p: any, index: number) => ({
+        id: p.id || String(index + 1),
+        name: p.name || 'Unnamed Process',
+        category: ['core', 'support', 'management'].includes(p.category) ? p.category : 'core',
+        inputs: Array.isArray(p.inputs) ? p.inputs.slice(0, 4) : [],
+        outputs: Array.isArray(p.outputs) ? p.outputs.slice(0, 4) : [],
+        risk: p.risk || 'Process failure risk',
+        kpi: p.kpi || 'Process performance metric',
+        owner: p.owner || 'Process Owner',
+        isoClauses: Array.isArray(p.isoClauses) ? p.isoClauses : ['8.1']
+      })) || [],
+      interactions: parsed.interactions?.map((i: any) => ({
+        from: i.from || '',
+        to: i.to || '',
+        description: i.description || ''
+      })) || [],
+      processFlow: parsed.processFlow || null
+    }
+
+    return new Response(
+      JSON.stringify({ data: processData }),
+      { 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST',
+          'Access-Control-Allow-Headers': 'Content-Type'
+        } 
+      }
+    )
+
+  } catch (error) {
+    console.error('Edge function error:', error)
+    
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || 'Failed to generate process map',
+        fallback: true 
+      }),
+      { 
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        } 
+      }
+    )
+  }
+})

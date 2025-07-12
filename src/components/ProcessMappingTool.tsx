@@ -77,7 +77,7 @@ export const ProcessMappingTool: React.FC = () => {
         console.log('AI service unavailable, using benchmarks:', error);
         // Fallback to benchmark data
         const benchmark = getIndustryBenchmark(industry);
-        processData = generateBenchmarkProcessMap(industry, coreProcesses, benchmark);
+        processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
       }
       
       setGeneratedData(processData);
@@ -87,7 +87,7 @@ export const ProcessMappingTool: React.FC = () => {
       // Final fallback to benchmark data
       const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
       const benchmark = getIndustryBenchmark(industry);
-      const fallbackData = generateBenchmarkProcessMap(industry, coreProcesses, benchmark);
+      const fallbackData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
       setGeneratedData(fallbackData);
       setCurrentStep('generated');
     } finally {
@@ -97,19 +97,94 @@ export const ProcessMappingTool: React.FC = () => {
 
   // This function would call your Supabase Edge Function
   const generateWithAI = async (industry: string, processes: string): Promise<ProcessMappingData> => {
-    // TODO: Replace with actual Supabase Edge Function call
-    // const { data } = await supabase.functions.invoke('generate-process-map', {
-    //   body: { industry, processes }
-    // });
-    // return data;
-    
-    // For now, enhanced benchmark generation
-    const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
-    const benchmark = getIndustryBenchmark(industry);
-    return generateBenchmarkProcessMap(industry, processes, benchmark);
+    try {
+      // TODO: Replace with actual Supabase Edge Function call
+      const response = await fetch('/api/generate-process-map', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          industry, 
+          processes,
+          prompt: buildAIPrompt(industry, processes)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.data;
+    } catch (error) {
+      console.error('AI service error:', error);
+      // Fallback to enhanced benchmark generation
+      const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
+      const benchmark = getIndustryBenchmark(industry);
+      return generateEnhancedBenchmarkProcessMap(industry, processes, benchmark);
+    }
   };
 
-  const generateBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
+  const buildAIPrompt = (industry: string, userProcesses: string): string => {
+    return `
+Generate a comprehensive ISO 9001:2015 process map for the ${industry} industry. 
+
+User mentioned these processes: ${userProcesses}
+
+Requirements:
+1. Include industry benchmark processes (core, support, management) even if not mentioned by user
+2. Add detailed process interactions showing how processes feed into each other
+3. Categorize all processes correctly (core/support/management)
+4. Include realistic inputs, outputs, risks, KPIs, and responsible roles
+5. Map to relevant ISO 9001:2015 clauses
+6. Show process flow relationships with descriptions
+
+Return ONLY valid JSON in this exact format:
+{
+  "processes": [
+    {
+      "id": "unique_id",
+      "name": "Process Name",
+      "category": "core|support|management",
+      "inputs": ["input1", "input2", "input3"],
+      "outputs": ["output1", "output2", "output3"],
+      "risk": "Primary risk description",
+      "kpi": "Key performance indicator with specific metric",
+      "owner": "Responsible role/title",
+      "isoClauses": ["clause1", "clause2"]
+    }
+  ],
+  "interactions": [
+    {
+      "from": "Source Process Name",
+      "to": "Target Process Name", 
+      "description": "What flows between processes"
+    }
+  ],
+  "processFlow": {
+    "primaryFlow": ["process1", "process2", "process3"],
+    "supportingFlows": [
+      {
+        "name": "Support Flow Name",
+        "processes": ["support1", "support2"]
+      }
+    ],
+    "feedbackLoops": [
+      {
+        "from": "end_process",
+        "to": "start_process",
+        "description": "Improvement feedback"
+      }
+    ]
+  }
+}
+
+Focus on ${industry} industry best practices and current ISO 9001:2015 requirements.
+`;
+  };
+
+  const generateEnhancedBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
     const userProcessList = userProcesses.split('\n').filter(p => p.trim());
     const allProcesses = [...userProcessList];
     
