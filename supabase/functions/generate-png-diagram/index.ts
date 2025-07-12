@@ -18,13 +18,16 @@ serve(async (req) => {
     // Generate SVG diagram
     const svgContent = generateProcessDiagram(processData, industry);
     
-    // Return the SVG content directly as base64
-    const svgBase64 = btoa(svgContent);
+    // Convert to PNG format (as base64 data URL)
+    const pngDataUrl = await convertSvgToPng(svgContent);
+    
+    // Extract base64 part from data URL
+    const base64Data = pngDataUrl.includes(',') ? pngDataUrl.split(',')[1] : pngDataUrl;
 
     return new Response(JSON.stringify({ 
-      svg: svgBase64,
-      filename: `${industry.replace(/\s+/g, '_')}_Process_Diagram.svg`,
-      contentType: 'image/svg+xml'
+      png: base64Data,
+      filename: `${industry.replace(/\s+/g, '_')}_Process_Diagram.png`,
+      contentType: 'image/png'
     }), {
       headers: { 
         ...corsHeaders,
@@ -203,4 +206,21 @@ function splitText(text: string, maxLength: number): string[] {
   
   if (currentLine) lines.push(currentLine);
   return lines.slice(0, 2); // Max 2 lines
+}
+
+async function convertSvgToPng(svgContent: string): Promise<string> {
+  try {
+    // Clean SVG and ensure proper namespace
+    let cleanSvg = svgContent.trim();
+    if (!cleanSvg.includes('xmlns')) {
+      cleanSvg = cleanSvg.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+    }
+    
+    // Create a data URL that browsers can handle
+    const base64Svg = btoa(unescape(encodeURIComponent(cleanSvg)));
+    return `data:image/svg+xml;base64,${base64Svg}`;
+  } catch (error) {
+    console.error('Error converting SVG to PNG format:', error);
+    throw error;
+  }
 }
