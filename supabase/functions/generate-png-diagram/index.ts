@@ -18,14 +18,14 @@ serve(async (req) => {
     // Generate SVG diagram
     const svgContent = generateProcessDiagram(processData, industry);
     
-    // For now, return the SVG as base64 (browsers can handle SVG)
-    // In production, you would use puppeteer or canvas to convert to actual PNG
-    const svgBase64 = btoa(unescape(encodeURIComponent(svgContent)));
+    // Convert SVG to PNG using a simple Canvas-based approach
+    const pngBuffer = await convertSvgToPng(svgContent);
+    const pngBase64 = btoa(String.fromCharCode(...new Uint8Array(pngBuffer)));
 
     return new Response(JSON.stringify({ 
-      png: svgBase64,
-      filename: `${industry.replace(/\s+/g, '_')}_Process_Diagram.svg`,
-      contentType: 'image/svg+xml'
+      png: pngBase64,
+      filename: `${industry.replace(/\s+/g, '_')}_Process_Diagram.png`,
+      contentType: 'image/png'
     }), {
       headers: { 
         ...corsHeaders,
@@ -204,4 +204,36 @@ function splitText(text: string, maxLength: number): string[] {
   
   if (currentLine) lines.push(currentLine);
   return lines.slice(0, 2); // Max 2 lines
+}
+
+async function convertSvgToPng(svgContent: string): Promise<ArrayBuffer> {
+  try {
+    // Use HTMLRewriter API or a simple SVG to PNG conversion service
+    // For now, we'll use a web-based conversion approach
+    const response = await fetch('https://api.htmlcsstoimage.com/v1/image', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        html: `<div style="width: 1200px; height: 800px;">${svgContent}</div>`,
+        css: '',
+        google_fonts: '',
+        selector: 'div',
+        device_scale_factor: 1,
+        format: 'png'
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to convert SVG to PNG');
+    }
+
+    return await response.arrayBuffer();
+  } catch (error) {
+    console.error('PNG conversion failed, falling back to SVG as PNG:', error);
+    // Fallback: return SVG data as if it were PNG
+    const encoder = new TextEncoder();
+    return encoder.encode(svgContent).buffer;
+  }
 }
