@@ -69,12 +69,12 @@ export const ProcessMappingTool: React.FC = () => {
       
       let processData: ProcessMappingData;
       
-      // Always try AI service first with your API key
+      // Always try our service first with your API key
       try {
         // This would call your Supabase Edge Function
         processData = await generateWithAI(industry, coreProcesses);
       } catch (error) {
-        console.log('AI service unavailable, using benchmarks:', error);
+        console.log('Service unavailable, using benchmarks:', error);
         // Fallback to benchmark data
         const benchmark = getIndustryBenchmark(industry);
         processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
@@ -118,7 +118,7 @@ export const ProcessMappingTool: React.FC = () => {
       const result = await response.json();
       return result.data;
     } catch (error) {
-      console.error('AI service error:', error);
+      console.error('Service error:', error);
       // Fallback to enhanced benchmark generation
       const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
       const benchmark = getIndustryBenchmark(industry);
@@ -267,7 +267,7 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">ISO 9001 Process Mapper</h1>
-              <p className="text-muted-foreground">AI-powered process mapping and documentation</p>
+              <p className="text-muted-foreground">Smart process mapping and documentation</p>
             </div>
           </div>
         </div>

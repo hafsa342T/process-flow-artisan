@@ -72,33 +72,12 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
         <div className="inline-flex items-center gap-3 p-6 bg-gradient-to-r from-primary-light to-accent-light rounded-xl animate-pulse-glow">
           <Brain className="h-10 w-10 text-primary" />
           <div className="text-left">
-            <h2 className="text-2xl font-bold text-primary">AI-Powered Process Generation</h2>
-            <p className="text-primary/80">Industry benchmarks + AI analysis = Comprehensive ISO 9001 documentation</p>
+            <h2 className="text-2xl font-bold text-primary">Intelligent Process Generation</h2>
+            <p className="text-primary/80">Industry benchmarks + Smart analysis = Comprehensive ISO 9001 documentation</p>
           </div>
         </div>
       </div>
 
-      {/* Enhanced Features Notice */}
-      <Card className="border-accent/30 bg-gradient-to-r from-accent-light/20 to-primary-light/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-accent">
-            <Brain className="h-5 w-5" />
-            AI-Enhanced Process Generation
-          </CardTitle>
-          <CardDescription>
-            Powered by advanced AI for comprehensive industry-standard process mapping
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <Lightbulb className="h-4 w-4" />
-            <AlertDescription>
-              Our AI system combines industry benchmarks with real-time insights to generate 
-              comprehensive ISO 9001 process documentation tailored to your industry.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Input Form */}
@@ -257,7 +236,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
             <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center mx-auto mb-2">
               <Brain className="h-4 w-4 text-accent" />
             </div>
-            <h3 className="font-medium text-sm mb-1">AI Analysis</h3>
+            <h3 className="font-medium text-sm mb-1">Smart Analysis</h3>
             <p className="text-xs text-muted-foreground">Real-time industry trends and process optimization</p>
           </CardContent>
         </Card>

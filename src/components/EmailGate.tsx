@@ -44,14 +44,18 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
   };
 
   const sendReportEmail = async (email: string, data: ProcessMappingData, industry: string) => {
-    // TODO: Replace with actual Supabase Edge Function call
-    // const { data: result, error } = await supabase.functions.invoke('send-process-report', {
-    //   body: { email, processData: data, industry }
-    // });
-    // if (error) throw error;
+    const { supabase } = await import('@/integrations/supabase/client');
     
-    // For now, simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    const { data: result, error } = await supabase.functions.invoke('send-email', {
+      body: { email, processData: data, industry }
+    });
+    
+    if (error) {
+      console.error('Supabase function error:', error);
+      throw new Error('Failed to send email');
+    }
+    
+    return result;
   };
 
   if (isSubmitted) {

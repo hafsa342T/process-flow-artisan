@@ -260,6 +260,111 @@ export const industryBenchmarks: IndustryBenchmark[] = [
     ]
   },
   {
+    industry: "Consulting Services",
+    commonProcesses: {
+      core: [
+        "Client Acquisition & Business Development",
+        "Project Scoping & Proposal Development",
+        "Contract Negotiation & Management",
+        "Project Planning & Resource Allocation",
+        "Stakeholder Analysis & Engagement",
+        "Data Collection & Analysis",
+        "Solution Design & Development",
+        "Implementation & Change Management",
+        "Progress Monitoring & Reporting",
+        "Knowledge Transfer & Training",
+        "Project Closure & Evaluation",
+        "Client Relationship Management"
+      ],
+      support: [
+        "Human Resources Management",
+        "Information Technology Support",
+        "Finance & Accounting",
+        "Legal & Compliance",
+        "Marketing & Communications",
+        "Knowledge Management",
+        "Document Management",
+        "Facilities Management",
+        "Vendor & Supplier Management",
+        "Training & Professional Development"
+      ],
+      management: [
+        "Strategic Planning",
+        "Quality Management System",
+        "Risk Management",
+        "Performance Management",
+        "Client Portfolio Management",
+        "Internal Audit",
+        "Management Review",
+        "Continuous Improvement",
+        "Business Development Planning",
+        "Resource Planning & Optimization"
+      ]
+    },
+    keyInteractions: [
+      {
+        from: "Client Acquisition & Business Development",
+        to: "Project Scoping & Proposal Development",
+        type: "information",
+        description: "Client requirements, objectives, constraints",
+        frequency: "as-needed"
+      },
+      {
+        from: "Project Scoping & Proposal Development",
+        to: "Contract Negotiation & Management",
+        type: "information",
+        description: "Project scope, deliverables, timeline, pricing",
+        frequency: "as-needed"
+      },
+      {
+        from: "Contract Negotiation & Management",
+        to: "Project Planning & Resource Allocation",
+        type: "information",
+        description: "Signed contract, project parameters, resource requirements",
+        frequency: "as-needed"
+      },
+      {
+        from: "Data Collection & Analysis",
+        to: "Solution Design & Development",
+        type: "information",
+        description: "Analysis results, insights, recommendations",
+        frequency: "continuous"
+      },
+      {
+        from: "Implementation & Change Management",
+        to: "Progress Monitoring & Reporting",
+        type: "information",
+        description: "Implementation status, milestones, issues",
+        frequency: "weekly"
+      },
+      {
+        from: "Client Relationship Management",
+        to: "Client Acquisition & Business Development",
+        type: "feedback",
+        description: "Client satisfaction, referrals, new opportunities",
+        frequency: "monthly"
+      }
+    ],
+    industryRisks: [
+      "Scope creep and project overruns",
+      "Client expectations misalignment",
+      "Key personnel unavailability",
+      "Confidentiality and data security breaches",
+      "Intellectual property disputes",
+      "Regulatory and compliance violations",
+      "Market competition and pricing pressure"
+    ],
+    commonKPIs: [
+      "Client Satisfaction Score",
+      "Project Delivery On-Time Rate",
+      "Budget Variance Percentage",
+      "Consultant Utilization Rate",
+      "Client Retention Rate",
+      "Revenue per Consultant",
+      "Proposal Win Rate"
+    ]
+  },
+  {
     industry: "Financial Services",
     commonProcesses: {
       core: [
@@ -349,6 +454,10 @@ export const getIndustryBenchmark = (industry: string): IndustryBenchmark | null
   
   if (normalizedIndustry.includes('financ') || normalizedIndustry.includes('bank') || normalizedIndustry.includes('insurance')) {
     return industryBenchmarks.find(b => b.industry === 'Financial Services') || null;
+  }
+  
+  if (normalizedIndustry.includes('consult') || normalizedIndustry.includes('advisory') || normalizedIndustry.includes('professional services')) {
+    return industryBenchmarks.find(b => b.industry === 'Consulting Services') || null;
   }
   
   return null;
