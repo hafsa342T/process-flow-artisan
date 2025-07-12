@@ -427,7 +427,8 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
 
   const handleEmailSubmitted = (email: string) => {
     setUserEmail(email);
-    setCurrentStep('results');
+    // Redirect to payment page instead of results
+    window.location.href = `/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`;
   };
 
   const handleBackToEmailGate = () => {
