@@ -78,13 +78,14 @@ export const ProcessMappingTool: React.FC = () => {
         processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
       } else {
         // Use AI generation for unknown/rare industries
-        console.log('Unknown industry - using AI generation:', industry);
+        console.log('Unknown industry - attempting AI generation:', industry);
         try {
           processData = await generateWithAI(industry, coreProcesses);
+          console.log('AI generation successful');
         } catch (error) {
-          console.log('AI generation failed, using generic fallback:', error);
-          // Final fallback to generic template
-          processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, null);
+          console.error('AI generation failed:', error);
+          // Create industry-specific processes manually for now
+          processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
         }
       }
       
@@ -234,6 +235,103 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
           description: 'Process output feeds next process'
         });
       }
+    }
+
+    return { processes, interactions };
+  };
+
+  // Generate industry-specific processes when AI is not available
+  const generateIndustrySpecificProcessMap = (industry: string, userProcesses: string): ProcessMappingData => {
+    const userProcessList = userProcesses.split('\n').filter(p => p.trim());
+    const industryLower = industry.toLowerCase();
+    
+    // Define industry-specific processes
+    let industryProcesses: string[] = [];
+    
+    if (industryLower.includes('dental') || industryLower.includes('clinic')) {
+      industryProcesses = [
+        'Patient Registration',
+        'Appointment Scheduling', 
+        'Clinical Examination',
+        'Treatment Planning',
+        'Dental Procedures',
+        'Sterilization & Infection Control',
+        'Patient Records Management',
+        'Billing & Insurance Processing',
+        'Equipment Maintenance',
+        'Quality Assurance'
+      ];
+    } else if (industryLower.includes('restaurant') || industryLower.includes('food')) {
+      industryProcesses = [
+        'Menu Planning',
+        'Inventory Management',
+        'Food Preparation',
+        'Order Taking',
+        'Cooking & Food Service',
+        'Customer Service',
+        'Cleaning & Sanitation',
+        'Staff Management',
+        'Quality Control',
+        'Financial Management'
+      ];
+    } else if (industryLower.includes('law') || industryLower.includes('legal')) {
+      industryProcesses = [
+        'Client Intake',
+        'Case Management',
+        'Legal Research',
+        'Document Preparation',
+        'Court Representation',
+        'Client Communication',
+        'Billing & Time Tracking',
+        'Compliance Management',
+        'File Management',
+        'Professional Development'
+      ];
+    } else {
+      // Generic business processes
+      industryProcesses = [
+        'Customer Service',
+        'Operations Management',
+        'Quality Control',
+        'Sales Process',
+        'Marketing',
+        'Financial Management',
+        'Human Resources',
+        'Supply Chain',
+        'Technology Management',
+        'Compliance'
+      ];
+    }
+    
+    // Combine user processes with industry-specific ones
+    const allProcesses = [...userProcessList, ...industryProcesses.filter(ip => 
+      !userProcessList.some(up => up.toLowerCase().includes(ip.toLowerCase().split(' ')[0].toLowerCase()))
+    )];
+
+    const processes: ProcessData[] = allProcesses.map((name, index) => {
+      const isCore = index < userProcessList.length || industryProcesses.slice(0, 5).includes(name);
+      const category = isCore ? 'core' : (index % 3 === 0 ? 'support' : 'management');
+      
+      return {
+        id: String(index + 1),
+        name,
+        category,
+        inputs: [`${name} requirements`, 'Resources', 'Information'],
+        outputs: [`${name} deliverables`, 'Documentation', 'Reports'],
+        risk: `${name} failure or delays`,
+        kpi: `${name} efficiency and quality metrics`,
+        owner: `${name.split(' ')[0]} Manager`,
+        isoClauses: ['8.1', '8.2', '9.1']
+      };
+    });
+
+    const interactions: ProcessInteraction[] = [];
+    for (let i = 0; i < Math.min(processes.length - 1, 8); i++) {
+      interactions.push({
+        from: processes[i].name,
+        to: processes[i + 1].name,
+        description: `${processes[i].name} output feeds into ${processes[i + 1].name}`
+      });
     }
 
     return { processes, interactions };
