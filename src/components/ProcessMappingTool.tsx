@@ -11,6 +11,8 @@ import { ProcessInput } from './ProcessInput';
 import { ProcessList } from './ProcessList';
 import { ProcessFlow } from './ProcessFlow';
 import { ExportOptions } from './ExportOptions';
+import { EmailGate } from './EmailGate';
+import { ResultsView } from './ResultsView';
 
 export interface ProcessData {
   id: string;
@@ -48,11 +50,12 @@ export interface ProcessMappingData {
 }
 
 export const ProcessMappingTool: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState<'input' | 'generated' | 'editing'>('input');
+  const [currentStep, setCurrentStep] = useState<'input' | 'generated' | 'editing' | 'email-gate' | 'results'>('input');
   const [industry, setIndustry] = useState('');
   const [coreProcesses, setCoreProcesses] = useState('');
   const [generatedData, setGeneratedData] = useState<ProcessMappingData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
 
   const handleGenerate = async () => {
     if (!industry.trim() || !coreProcesses.trim()) return;
@@ -78,7 +81,7 @@ export const ProcessMappingTool: React.FC = () => {
       }
       
       setGeneratedData(processData);
-      setCurrentStep('generated');
+      setCurrentStep('email-gate');
     } catch (error) {
       console.error('Generation error:', error);
       // Final fallback to benchmark data
@@ -86,7 +89,7 @@ export const ProcessMappingTool: React.FC = () => {
       const benchmark = getIndustryBenchmark(industry);
       const fallbackData = generateBenchmarkProcessMap(industry, coreProcesses, benchmark);
       setGeneratedData(fallbackData);
-      setCurrentStep('generated');
+      setCurrentStep('email-gate');
     } finally {
       setIsGenerating(false);
     }
@@ -169,6 +172,15 @@ export const ProcessMappingTool: React.FC = () => {
     setGeneratedData(updatedData);
   };
 
+  const handleEmailSubmitted = (email: string) => {
+    setUserEmail(email);
+    setCurrentStep('results');
+  };
+
+  const handleBackToEmailGate = () => {
+    setCurrentStep('email-gate');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -199,22 +211,22 @@ export const ProcessMappingTool: React.FC = () => {
               <span className="font-medium">Input</span>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            <div className={`flex items-center gap-2 ${currentStep === 'generated' || currentStep === 'editing' ? 'text-primary' : 'text-muted-foreground'}`}>
+            <div className={`flex items-center gap-2 ${['generated', 'editing', 'email-gate', 'results'].includes(currentStep) ? 'text-primary' : 'text-muted-foreground'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                currentStep === 'generated' || currentStep === 'editing' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                ['generated', 'editing', 'email-gate', 'results'].includes(currentStep) ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
               }`}>
                 2
               </div>
               <span className="font-medium">Generate</span>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            <div className={`flex items-center gap-2 ${currentStep === 'editing' ? 'text-primary' : 'text-muted-foreground'}`}>
+            <div className={`flex items-center gap-2 ${currentStep === 'results' ? 'text-primary' : 'text-muted-foreground'}`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                currentStep === 'editing' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                currentStep === 'results' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
               }`}>
                 3
               </div>
-              <span className="font-medium">Customize</span>
+              <span className="font-medium">Results</span>
             </div>
           </div>
         </div>
@@ -267,6 +279,23 @@ export const ProcessMappingTool: React.FC = () => {
             <ProcessList data={generatedData} onUpdate={updateProcessData} />
             <ProcessFlow data={generatedData} />
           </div>
+        )}
+
+        {currentStep === 'email-gate' && generatedData && (
+          <EmailGate 
+            data={generatedData} 
+            industry={industry}
+            onEmailSubmitted={handleEmailSubmitted}
+          />
+        )}
+
+        {currentStep === 'results' && generatedData && userEmail && (
+          <ResultsView 
+            data={generatedData} 
+            industry={industry}
+            userEmail={userEmail}
+            onBack={handleBackToEmailGate}
+          />
         )}
       </div>
     </div>

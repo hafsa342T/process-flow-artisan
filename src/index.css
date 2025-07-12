@@ -46,6 +46,11 @@ All colors MUST be HSL for consistency and theming.
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 10% 95%;
 
+    /* Process category colors */
+    --process-core: 215 85% 25%;
+    --process-support: 185 75% 35%;
+    --process-management: 45 90% 50%;
+
     /* Borders and inputs */
     --border: 210 15% 88%;
     --input: 210 15% 88%;
