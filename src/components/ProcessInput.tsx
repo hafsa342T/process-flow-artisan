@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Brain, Building2, Loader2, Lightbulb, Plus, X } from 'lucide-react';
+import { Brain, Building2, Loader2, Lightbulb, Plus, X, Sparkles } from 'lucide-react';
 import { getIndustryBenchmark, IndustryBenchmark } from '@/data/industryBenchmarks';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface ProcessInputProps {
   industry: string;
@@ -28,6 +30,9 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
 }) => {
   const [benchmark, setBenchmark] = useState<IndustryBenchmark | null>(null);
   const [selectedBenchmarkProcesses, setSelectedBenchmarkProcesses] = useState<string[]>([]);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [isLoadingAiSuggestions, setIsLoadingAiSuggestions] = useState(false);
+  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
 
   useEffect(() => {
     if (industry.trim()) {
@@ -54,6 +59,52 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
   };
 
   const handleRemoveBenchmarkProcess = (process: string) => {
+    const updated = selectedBenchmarkProcesses.filter(p => p !== process);
+    setSelectedBenchmarkProcesses(updated);
+    onCoreProcessesChange(updated.join('\n'));
+  };
+
+  const handleGetAiSuggestions = async () => {
+    if (!industry.trim()) {
+      toast.error('Please enter an industry first');
+      return;
+    }
+
+    setIsLoadingAiSuggestions(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-process-map', {
+        body: {
+          industry: industry,
+          coreProcesses: 'Generate industry-specific benchmark processes',
+          onlyBenchmarks: true
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.processes) {
+        const processes = data.processes.map((p: any) => p.name);
+        setAiSuggestions(processes);
+        setShowAiSuggestions(true);
+        toast.success('AI suggestions generated successfully!');
+      }
+    } catch (error) {
+      console.error('Error getting AI suggestions:', error);
+      toast.error('Failed to get AI suggestions. Please try again.');
+    } finally {
+      setIsLoadingAiSuggestions(false);
+    }
+  };
+
+  const handleAddAiSuggestion = (process: string) => {
+    if (!selectedBenchmarkProcesses.includes(process)) {
+      const updated = [...selectedBenchmarkProcesses, process];
+      setSelectedBenchmarkProcesses(updated);
+      onCoreProcessesChange(updated.join('\n'));
+    }
+  };
+
+  const handleRemoveAiSuggestion = (process: string) => {
     const updated = selectedBenchmarkProcesses.filter(p => p !== process);
     setSelectedBenchmarkProcesses(updated);
     onCoreProcessesChange(updated.join('\n'));
@@ -94,15 +145,29 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="industry" className="text-sm font-medium">Industry or Sector</Label>
-              <Input
-                id="industry"
-                placeholder="e.g., Manufacturing, Software Development, Healthcare"
-                value={industry}
-                onChange={(e) => onIndustryChange(e.target.value)}
-                className="h-12 text-base"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="industry"
+                  placeholder="e.g., Dental Clinic, Restaurant, Law Firm"
+                  value={industry}
+                  onChange={(e) => onIndustryChange(e.target.value)}
+                  className="h-12 text-base flex-1"
+                />
+                <Button
+                  onClick={handleGetAiSuggestions}
+                  disabled={!industry.trim() || isLoadingAiSuggestions}
+                  variant="outline"
+                  className="h-12 px-4"
+                >
+                  {isLoadingAiSuggestions ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
               <p className="text-xs text-muted-foreground">
-                Be specific for better benchmark matching
+                Be specific for better results. Click the sparkle button to get AI-generated industry processes.
               </p>
             </div>
 
@@ -141,8 +206,54 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
           </CardContent>
         </Card>
 
+        {/* AI Suggestions */}
+        {showAiSuggestions && aiSuggestions.length > 0 && (
+          <Card className="shadow-lg border-primary/30 bg-gradient-to-br from-primary-light/20 to-primary-light/10 animate-scale-in">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Sparkles className="h-6 w-6 text-primary" />
+                AI-Generated Processes for {industry}
+              </CardTitle>
+              <CardDescription>
+                Industry-specific processes generated by AI. Select the ones relevant to your business.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h4 className="font-medium text-sm mb-3 text-primary">SUGGESTED PROCESSES</h4>
+                <div className="grid gap-2 max-h-64 overflow-y-auto">
+                  {aiSuggestions.map((process, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-card rounded border">
+                      <span className="text-sm">{process}</span>
+                      {selectedBenchmarkProcesses.includes(process) ? (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleRemoveAiSuggestion(process)}
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      ) : (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleAddAiSuggestion(process)}
+                          className="h-6 w-6 p-0"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Industry Benchmarks */}
-        {benchmark && (
+        {benchmark && !showAiSuggestions && (
           <Card className="shadow-lg border-accent/30 bg-gradient-to-br from-accent-light/20 to-accent-light/10 animate-scale-in">
             <CardHeader>
               <CardTitle className="text-xl flex items-center gap-2">
@@ -222,6 +333,36 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
                 <div className="text-xs text-muted-foreground space-y-1">
                   <p><strong>Common Risks:</strong> {benchmark.industryRisks.slice(0, 2).join(', ')}</p>
                   <p><strong>Key KPIs:</strong> {benchmark.commonKPIs.slice(0, 2).join(', ')}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Show both AI suggestions and benchmarks if both exist */}
+        {benchmark && showAiSuggestions && (
+          <Card className="shadow-lg border-accent/30 bg-gradient-to-br from-accent-light/20 to-accent-light/10">
+            <CardHeader>
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Lightbulb className="h-6 w-6 text-accent" />
+                {benchmark.industry} Standard Benchmarks
+              </CardTitle>
+              <CardDescription>
+                Industry-standard processes for reference
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-medium text-sm mb-2 text-process-core">CORE PROCESSES</h4>
+                <div className="flex flex-wrap gap-1">
+                  {benchmark.commonProcesses.core.slice(0, 4).map((process, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">
+                      {process}
+                    </Badge>
+                  ))}
+                  <Badge variant="outline" className="text-xs">
+                    +{benchmark.commonProcesses.core.length - 4} more
+                  </Badge>
                 </div>
               </div>
             </CardContent>

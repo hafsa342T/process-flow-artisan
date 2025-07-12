@@ -5,13 +5,32 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 serve(async (req) => {
   try {
-    const { industry, processes, prompt } = await req.json()
+    const { industry, processes, prompt, onlyBenchmarks } = await req.json()
     
     // Get the API key from Supabase secrets
     const apiKey = Deno.env.get('PERPLEXITY_API_KEY') || Deno.env.get('OPENAI_API_KEY')
     
     if (!apiKey) {
       throw new Error('AI API key not configured in Supabase secrets')
+    }
+
+    // Create appropriate prompt based on request type
+    let systemPrompt, userPrompt, maxTokens;
+    
+    if (onlyBenchmarks) {
+      systemPrompt = 'You are a business process expert. Generate industry-specific core business processes as a simple JSON array.';
+      userPrompt = `Generate 8-12 essential core business processes for a ${industry} business. Return ONLY a JSON array of process names:
+["Process 1", "Process 2", "Process 3", ...]
+
+Examples:
+- Dental clinic: ["Patient Registration", "Appointment Scheduling", "Clinical Examination", "Treatment Planning", "Dental Procedures", "Sterilization & Infection Control", "Patient Records Management", "Billing & Insurance Processing"]
+- Restaurant: ["Menu Planning", "Food Preparation", "Order Taking", "Customer Service", "Kitchen Operations", "Inventory Management", "Quality Control", "Financial Management"]
+- Law firm: ["Client Intake", "Case Management", "Legal Research", "Document Preparation", "Court Representation", "Client Communication", "Billing & Time Tracking", "Compliance Management"]`;
+      maxTokens = 800;
+    } else {
+      systemPrompt = 'You are an ISO 9001:2015 process mapping expert. Generate comprehensive process documentation in JSON format. Always include benchmark industry processes even if not mentioned by the user. Focus on realistic process interactions and flows.';
+      userPrompt = prompt;
+      maxTokens = 4000;
     }
 
     // Use Perplexity AI for real-time industry knowledge
@@ -26,16 +45,16 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an ISO 9001:2015 process mapping expert. Generate comprehensive process documentation in JSON format. Always include benchmark industry processes even if not mentioned by the user. Focus on realistic process interactions and flows.`
+            content: systemPrompt
           },
           {
             role: 'user',
-            content: prompt
+            content: userPrompt
           }
         ],
         temperature: 0.2,
         top_p: 0.9,
-        max_tokens: 4000,
+        max_tokens: maxTokens,
         return_images: false,
         return_related_questions: false,
         search_recency_filter: 'month',
@@ -56,6 +75,33 @@ serve(async (req) => {
     }
 
     // Parse and validate the JSON response
+    if (onlyBenchmarks) {
+      // For benchmark requests, expect a simple array
+      const arrayMatch = content.match(/\[[\s\S]*?\]/)
+      if (!arrayMatch) {
+        throw new Error('No JSON array found in AI response')
+      }
+      
+      const processNames = JSON.parse(arrayMatch[0])
+      const processes = processNames.map((name: string, index: number) => ({
+        id: String(index + 1),
+        name: name
+      }))
+      
+      return new Response(
+        JSON.stringify({ processes }),
+        { 
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST',
+            'Access-Control-Allow-Headers': 'Content-Type'
+          } 
+        }
+      )
+    }
+
+    // For full process maps
     const jsonMatch = content.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       throw new Error('No JSON found in AI response')
