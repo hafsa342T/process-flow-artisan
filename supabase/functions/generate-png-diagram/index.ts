@@ -81,7 +81,7 @@ function generateProcessDiagram(processData: any, industry: string): string {
       
       <!-- Title -->
       <text x="${width/2}" y="40" class="title-text">ISO 9001 Process Map</text>
-      <text x="${width/2}" y="65" class="subtitle-text">${industry}</text>
+      <text x="${width/2}" y="65" class="subtitle-text">${escapeXml(industry)}</text>
   `;
 
   // Position processes in a smart grid
@@ -142,13 +142,13 @@ function generateProcessDiagram(processData: any, industry: string): string {
     const lines = splitText(name, 22);
     lines.forEach((line: string, lineIndex: number) => {
       svgContent += `
-        <text x="${x + boxWidth/2}" y="${y + 25 + lineIndex * 14}" class="process-text">${line}</text>
+        <text x="${x + boxWidth/2}" y="${y + 25 + lineIndex * 14}" class="process-text">${escapeXml(line)}</text>
       `;
     });
 
     // Category label
     svgContent += `
-      <text x="${x + boxWidth/2}" y="${y + boxHeight - 12}" class="category-text">${process.category.toUpperCase()}</text>
+      <text x="${x + boxWidth/2}" y="${y + boxHeight - 12}" class="category-text">${escapeXml(process.category.toUpperCase())}</text>
     `;
   });
 
@@ -209,6 +209,15 @@ function splitText(text: string, maxLength: number): string[] {
   
   if (currentLine) lines.push(currentLine);
   return lines.slice(0, 2); // Max 2 lines
+}
+
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function convertSvgToPng(svgContent: string): Promise<string> {
