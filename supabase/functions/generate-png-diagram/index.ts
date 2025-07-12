@@ -92,6 +92,35 @@ function generateProcessDiagram(processData: any, industry: string): string {
   const spacingX = (width - 100) / cols;
   const spacingY = (height - 200) / rows;
 
+  // First draw all arrows behind the boxes
+  interactions.forEach((interaction: any) => {
+    const sourceIndex = processes.findIndex((p: any) => p.name === interaction.from);
+    const targetIndex = processes.findIndex((p: any) => p.name === interaction.to);
+    
+    if (sourceIndex !== -1 && targetIndex !== -1) {
+      const sourceCol = sourceIndex % cols;
+      const sourceRow = Math.floor(sourceIndex / cols);
+      const sourceX = 50 + sourceCol * spacingX + (spacingX - boxWidth) / 2;
+      const sourceY = 100 + sourceRow * spacingY + (spacingY - boxHeight) / 2;
+      
+      const targetCol = targetIndex % cols;
+      const targetRow = Math.floor(targetIndex / cols);
+      const targetX = 50 + targetCol * spacingX + (spacingX - boxWidth) / 2;
+      const targetY = 100 + targetRow * spacingY + (spacingY - boxHeight) / 2;
+
+      // Draw arrow from center of source to center of target
+      const fromX = sourceX + boxWidth / 2;
+      const fromY = sourceY + boxHeight / 2;
+      const toX = targetX + boxWidth / 2;
+      const toY = targetY + boxHeight / 2;
+
+      svgContent += `
+        <line x1="${fromX}" y1="${fromY}" x2="${toX}" y2="${toY}" class="arrow"/>
+      `;
+    }
+  });
+
+  // Then draw all process boxes on top
   processes.forEach((process: any, index: number) => {
     const col = index % cols;
     const row = Math.floor(index / cols);
@@ -121,29 +150,6 @@ function generateProcessDiagram(processData: any, industry: string): string {
     svgContent += `
       <text x="${x + boxWidth/2}" y="${y + boxHeight - 12}" class="category-text">${process.category.toUpperCase()}</text>
     `;
-
-    // Add connection arrows for interactions
-    interactions.forEach((interaction: any) => {
-      if (interaction.from === process.name) {
-        const targetIndex = processes.findIndex((p: any) => p.name === interaction.to);
-        if (targetIndex !== -1) {
-          const targetCol = targetIndex % cols;
-          const targetRow = Math.floor(targetIndex / cols);
-          const targetX = 50 + targetCol * spacingX + (spacingX - boxWidth) / 2;
-          const targetY = 100 + targetRow * spacingY + (spacingY - boxHeight) / 2;
-
-          // Draw arrow from center of source to center of target
-          const fromX = x + boxWidth / 2;
-          const fromY = y + boxHeight / 2;
-          const toX = targetX + boxWidth / 2;
-          const toY = targetY + boxHeight / 2;
-
-          svgContent += `
-            <line x1="${fromX}" y1="${fromY}" x2="${toX}" y2="${toY}" class="arrow"/>
-          `;
-        }
-      }
-    });
   });
 
   // Add legend
@@ -166,13 +172,13 @@ function generateProcessDiagram(processData: any, industry: string): string {
     </g>
   `;
 
-  // Add process count info
+  // Add process count info at the bottom of the page
   const coreCount = processes.filter((p: any) => p.category === 'core').length;
   const supportCount = processes.filter((p: any) => p.category === 'support').length;
   const managementCount = processes.filter((p: any) => p.category === 'management').length;
 
   svgContent += `
-    <g transform="translate(${width - 200}, 100)">
+    <g transform="translate(${width - 200}, ${height - 80})">
       <text x="0" y="0" class="legend-title">Process Summary:</text>
       <text x="0" y="20" class="legend-text">Core: ${coreCount}</text>
       <text x="0" y="35" class="legend-text">Support: ${supportCount}</text>
