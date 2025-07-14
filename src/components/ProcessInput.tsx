@@ -241,6 +241,43 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
                   ))}
                 </div>
               </div>
+
+              {/* Mandatory Processes */}
+              {benchmark && (
+                <div className="space-y-4 pt-4 border-t border-muted">
+                  <div>
+                    <h4 className="font-medium text-xs mb-2 text-process-support uppercase tracking-wide">Mandatory Support Processes</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {benchmark.commonProcesses.support.map((process, idx) => (
+                        <Badge 
+                          key={idx} 
+                          variant="outline" 
+                          className="text-xs h-6 bg-process-support/10 text-process-support border-process-support/30 hover:bg-process-support/20 cursor-pointer transition-colors"
+                          onClick={() => handleAddAiSuggestion(process)}
+                        >
+                          {process}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium text-xs mb-2 text-process-management uppercase tracking-wide">Mandatory Management Processes</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {benchmark.commonProcesses.management.map((process, idx) => (
+                        <Badge 
+                          key={idx} 
+                          variant="outline" 
+                          className="text-xs h-6 bg-process-management/10 text-process-management border-process-management/30 hover:bg-process-management/20 cursor-pointer transition-colors"
+                          onClick={() => handleAddAiSuggestion(process)}
+                        >
+                          {process}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
