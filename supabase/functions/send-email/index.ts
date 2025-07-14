@@ -17,6 +17,23 @@ interface ProcessEmailRequest {
   isBasicReport?: boolean; // Flag for basic vs premium report
 }
 
+interface ClientDetailsEmailRequest {
+  type: 'client-details' | 'client-confirmation';
+  email: string;
+  clientDetails?: {
+    businessName: string;
+    industry: string;
+    products: string;
+    processNotes: string;
+    additionalRequests: string;
+    logo?: string;
+  };
+  clientName?: string;
+  processData?: any;
+  to: string;
+  cc?: string;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -24,7 +41,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, industry, processData, pdfReport, isBasicReport = false }: ProcessEmailRequest = await req.json();
+    const requestBody = await req.json();
+    
+    // Handle different email types
+    if (requestBody.type === 'client-details') {
+      return await handleClientDetailsEmail(requestBody as ClientDetailsEmailRequest);
+    } else if (requestBody.type === 'client-confirmation') {
+      return await handleClientConfirmationEmail(requestBody as ClientDetailsEmailRequest);
+    }
+    
+    // Handle original process email format
+    const { email, industry, processData, pdfReport, isBasicReport = false }: ProcessEmailRequest = requestBody;
 
     if (!email || !industry || !processData) {
       return new Response(
@@ -228,5 +255,160 @@ const handler = async (req: Request): Promise<Response> => {
     );
   }
 };
+
+// Handler for client details email to consultant team
+async function handleClientDetailsEmail(request: ClientDetailsEmailRequest): Promise<Response> {
+  const { email, clientDetails, processData, to, cc } = request;
+  
+  const emailHtml = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
+      <div style="background: #f8f9fa; padding: 30px; text-align: center; border-bottom: 3px solid #0066cc;">
+        <h1 style="color: #0066cc; margin: 0; font-size: 24px; font-weight: 600;">
+          QSE Academy - New Premium Report Request
+        </h1>
+        <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Client Payment Confirmed</p>
+      </div>
+      
+      <div style="padding: 30px;">
+        <div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: #0066cc; margin-top: 0; margin-bottom: 15px;">Client Details</h3>
+          <ul style="margin: 0; padding-left: 20px;">
+            <li><strong>Business Name:</strong> ${clientDetails?.businessName}</li>
+            <li><strong>Email:</strong> ${email}</li>
+            <li><strong>Industry:</strong> ${clientDetails?.industry}</li>
+            <li><strong>Products/Services:</strong> ${clientDetails?.products}</li>
+          </ul>
+        </div>
+        
+        ${clientDetails?.processNotes ? `
+        <div style="background: #f8f9fa; border-left: 4px solid #0066cc; padding: 20px; margin: 25px 0;">
+          <h4 style="color: #0066cc; margin-top: 0; margin-bottom: 15px;">Process Notes:</h4>
+          <p style="margin: 0;">${clientDetails.processNotes}</p>
+        </div>
+        ` : ''}
+        
+        ${clientDetails?.additionalRequests ? `
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; margin: 25px 0;">
+          <h4 style="color: #856404; margin-top: 0; margin-bottom: 15px;">Additional Requirements:</h4>
+          <p style="margin: 0;">${clientDetails.additionalRequests}</p>
+        </div>
+        ` : ''}
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 25px 0;">
+          <h4 style="margin-top: 0; margin-bottom: 15px;">Process Mapping Data:</h4>
+          <pre style="background: #fff; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 12px; border: 1px solid #ddd;">
+${JSON.stringify(processData, null, 2)}
+          </pre>
+        </div>
+        
+        <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 25px 0;">
+          <h4 style="color: #155724; margin-top: 0; margin-bottom: 15px;">⏰ Delivery Expectation</h4>
+          <p style="margin: 0; color: #155724;"><strong>Client expects delivery within 48 hours</strong></p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const attachments = [];
+  if (clientDetails?.logo) {
+    attachments.push({
+      filename: 'client-logo.png',
+      content: clientDetails.logo.split(',')[1], // Remove data:image/png;base64, prefix
+      encoding: 'base64'
+    });
+  }
+
+  const emailResponse = await resend.emails.send({
+    from: 'QSE Academy <noreply@qse-academy.com>',
+    to: [to],
+    cc: cc ? [cc] : undefined,
+    subject: `🔥 New Premium Report Request - ${clientDetails?.businessName}`,
+    html: emailHtml,
+    attachments: attachments.length > 0 ? attachments : undefined
+  });
+
+  return new Response(JSON.stringify(emailResponse), {
+    status: 200,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+}
+
+// Handler for client confirmation email
+async function handleClientConfirmationEmail(request: ClientDetailsEmailRequest): Promise<Response> {
+  const { email, clientName, to, cc } = request;
+  
+  const emailHtml = `
+    <div style="max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
+      <div style="background: #f8f9fa; padding: 30px; text-align: center; border-bottom: 3px solid #0066cc;">
+        <h1 style="color: #0066cc; margin: 0; font-size: 24px; font-weight: 600;">
+          QSE Academy
+        </h1>
+        <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Quality, Safety & Environmental Training</p>
+      </div>
+      
+      <div style="padding: 30px;">
+        <h2 style="color: #0066cc; margin-bottom: 20px;">Thank you for your purchase, ${clientName}!</h2>
+        
+        <p style="margin-bottom: 20px; font-size: 16px;">
+          We've received your payment and business details. Our ISO 9001 consultant is now working on your custom branded process map report.
+        </p>
+        
+        <div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 25px; margin: 30px 0;">
+          <h3 style="color: #0066cc; margin-top: 0; margin-bottom: 20px;">What happens next:</h3>
+          <div style="margin-bottom: 15px;">
+            <span style="background: #28a745; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; text-align: center; line-height: 20px; font-size: 12px; margin-right: 10px;">✓</span>
+            <strong>Payment confirmed</strong>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <span style="background: #ffc107; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; text-align: center; line-height: 20px; font-size: 12px; margin-right: 10px;">🔄</span>
+            <strong>Our consultant is customizing your report with your branding</strong>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <span style="background: #17a2b8; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; text-align: center; line-height: 20px; font-size: 12px; margin-right: 10px;">📊</span>
+            <strong>Adding expert recommendations for ISO 9001 compliance</strong>
+          </div>
+          <div style="margin-bottom: 0;">
+            <span style="background: #6c757d; color: white; border-radius: 50%; width: 20px; height: 20px; display: inline-block; text-align: center; line-height: 20px; font-size: 12px; margin-right: 10px;">📧</span>
+            <strong>You'll receive your report within 48 hours</strong>
+          </div>
+        </div>
+        
+        <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 25px 0; text-align: center;">
+          <h4 style="color: #155724; margin-top: 0; margin-bottom: 10px;">⏰ Expected Delivery</h4>
+          <p style="margin: 0; color: #155724; font-size: 16px;"><strong>Within 48 hours to this email address</strong></p>
+        </div>
+        
+        <p style="margin-bottom: 20px;">
+          If you have any questions, please contact our support team at 
+          <a href="mailto:support@qse-academy.com" style="color: #0066cc; text-decoration: none;">support@qse-academy.com</a>
+        </p>
+        
+        <p style="margin-bottom: 5px;">Best regards,</p>
+        <p style="margin-bottom: 20px; font-weight: 600;">The QSE Academy Team</p>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+        <p style="margin: 0; color: #666; font-size: 12px;">
+          QSE Academy | Quality, Safety & Environmental Training<br>
+          Web: <a href="https://qse-academy.com" style="color: #0066cc;">qse-academy.com</a> | 
+          Email: <a href="mailto:support@qse-academy.com" style="color: #0066cc;">support@qse-academy.com</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  const emailResponse = await resend.emails.send({
+    from: 'QSE Academy <noreply@qse-academy.com>',
+    to: [to],
+    cc: cc ? [cc] : undefined,
+    subject: 'Your ISO 9001 Process Map Report is Being Prepared - 48H Delivery',
+    html: emailHtml
+  });
+
+  return new Response(JSON.stringify(emailResponse), {
+    status: 200,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+}
 
 serve(handler);
