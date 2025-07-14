@@ -167,7 +167,20 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="manual-text" className="text-sm font-medium">Manual Process Entry</Label>
+                <Label htmlFor="mandatory-processes" className="text-sm font-medium">Mandatory Processes</Label>
+                <Textarea
+                  id="mandatory-processes"
+                  placeholder="Enter mandatory processes here, one per line..."
+                  rows={4}
+                  className="text-base resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Add any mandatory processes required for your industry (e.g., Quality Control, Document Management, etc.)
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="manual-text" className="text-sm font-medium">Your Core Processes</Label>
                 <Textarea
                   id="manual-text"
                   placeholder="Type your processes here, one per line..."
