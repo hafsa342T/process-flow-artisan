@@ -323,7 +323,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     };
 
-    // Prepare client email attachments
+    // Prepare client email attachments (only for premium reports)
     const clientAttachments = [];
     if (pdfReport && !isBasicReport) {
       // Extract the base64 content (remove data URL prefix if present)
@@ -335,18 +335,7 @@ const handler = async (req: Request): Promise<Response> => {
         type: 'application/pdf',
       });
     }
-
-    // For basic reports, also attach the comprehensive report to client
-    if (isBasicReport && processes.length > 0) {
-      const comprehensiveReport = generateComprehensiveReport(processes, processData.interactions || [], industry, email);
-      const base64HTML = btoa(unescape(encodeURIComponent(comprehensiveReport)));
-      
-      clientAttachments.push({
-        filename: `${industry.replace(/\s+/g, '_')}_Process_Report_Basic_Overview.html`,
-        content: base64HTML,
-        type: 'text/html',
-      });
-    }
+    // NOTE: Basic reports do NOT get comprehensive report attachment
 
     const subject = isBasicReport 
       ? `Your Process Report - ${industry} (Basic Overview)`
