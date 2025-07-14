@@ -60,50 +60,30 @@ export const ProcessMappingTool: React.FC = () => {
     if (!industry.trim() || !coreProcesses.trim()) return;
     
     setIsGenerating(true);
-    toast('Generating AI-powered process map...', { duration: 1000 });
     
     try {
-      // Add timeout to AI generation to prevent hanging
-      const processData = await Promise.race([
-        generateWithAI(industry, coreProcesses),
-        new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('AI generation timeout')), 30000) // 30 second timeout
-        )
-      ]);
+      // Skip AI generation - use fast benchmark/industry-specific generation directly
+      const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
+      
+      const benchmark = getIndustryBenchmark(industry);
+      let processData: ProcessMappingData;
+      
+      if (benchmark) {
+        // Use benchmark data for known industries
+        processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
+      } else {
+        // Use industry-specific processes
+        processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
+      }
       
       setGeneratedData(processData);
       setCurrentStep('generated');
-      toast('Process map generated successfully!');
     } catch (error) {
-      console.error('AI generation error, using fallback:', error);
-      toast('Using industry benchmark data...', { duration: 1000 });
-      
-      try {
-        const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
-        
-        // Try benchmark/industry-specific generation as fallback
-        const benchmark = getIndustryBenchmark(industry);
-        let processData: ProcessMappingData;
-        
-        if (benchmark) {
-          // Use benchmark data for known industries
-          processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
-        } else {
-          // Use industry-specific processes (final fallback)
-          processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
-        }
-        
-        setGeneratedData(processData);
-        setCurrentStep('generated');
-        toast('Process map generated using industry standards!');
-      } catch (fallbackError) {
-        console.error('Fallback generation error:', fallbackError);
-        // Final fallback
-        const processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
-        setGeneratedData(processData);
-        setCurrentStep('generated');
-        toast('Process map generated successfully!');
-      }
+      console.error('Generation error:', error);
+      // Final fallback
+      const processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
+      setGeneratedData(processData);
+      setCurrentStep('generated');
     } finally {
       setIsGenerating(false);
     }
