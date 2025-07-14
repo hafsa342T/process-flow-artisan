@@ -98,9 +98,57 @@ export const ProcessList: React.FC<ProcessListProps> = ({ data, onUpdate, readOn
       isoClauses: newProcess.isoClauses || ['4.4', '8.1']
     };
     
+    const updatedProcesses = [...data.processes, processToAdd];
+    
+    // Generate new interactions to connect the new process to existing flow
+    const newInteractions = [...data.interactions];
+    
+    // If it's a core process, connect it to the process flow
+    if (processToAdd.category === 'core') {
+      const coreProcesses = updatedProcesses.filter(p => p.category === 'core');
+      const newProcessIndex = coreProcesses.findIndex(p => p.id === processToAdd.id);
+      
+      // Connect to previous core process if exists
+      if (newProcessIndex > 0) {
+        const previousProcess = coreProcesses[newProcessIndex - 1];
+        newInteractions.push({
+          from: previousProcess.name,
+          to: processToAdd.name,
+          description: `${previousProcess.name} output feeds into ${processToAdd.name}`
+        });
+      }
+    }
+    
+    // If it's a support process, connect it to support core processes
+    if (processToAdd.category === 'support') {
+      const coreProcesses = updatedProcesses.filter(p => p.category === 'core');
+      if (coreProcesses.length > 0) {
+        // Connect to the first core process
+        newInteractions.push({
+          from: processToAdd.name,
+          to: coreProcesses[0].name,
+          description: `${processToAdd.name} supports ${coreProcesses[0].name}`
+        });
+      }
+    }
+    
+    // If it's a management process, connect it to oversee other processes
+    if (processToAdd.category === 'management') {
+      const allOtherProcesses = updatedProcesses.filter(p => p.category !== 'management' && p.id !== processToAdd.id);
+      if (allOtherProcesses.length > 0) {
+        // Connect to oversee the first process
+        newInteractions.push({
+          from: processToAdd.name,
+          to: allOtherProcesses[0].name,
+          description: `${processToAdd.name} oversees ${allOtherProcesses[0].name}`
+        });
+      }
+    }
+    
     onUpdate({
       ...data,
-      processes: [...data.processes, processToAdd]
+      processes: updatedProcesses,
+      interactions: newInteractions
     });
     
     // Reset form
