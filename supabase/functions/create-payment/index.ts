@@ -52,8 +52,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`,
+      success_url: `https://www.qse-academy.com/iso-9001-process-mapping-tool/?payment=success&email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `https://www.qse-academy.com/iso-9001-process-mapping-tool/?payment=cancelled&email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`,
       metadata: {
         email,
         industry,
