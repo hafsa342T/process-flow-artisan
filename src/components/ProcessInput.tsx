@@ -246,21 +246,38 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
                 </div>
               </div>
 
-              {/* Static Mandatory Processes Text Box */}
-              <div className="pt-4 border-t">
-                <div className="space-y-2">
-                  <Label htmlFor="mandatory-processes" className="text-sm font-medium">Mandatory Processes</Label>
-                  <Textarea
-                    id="mandatory-processes"
-                    placeholder="Enter mandatory processes here, one per line..."
-                    rows={4}
-                    className="text-base resize-none"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Add any mandatory processes required for your industry (e.g., Quality Control, Document Management, etc.)
-                  </p>
+              {/* Static Mandatory Processes Display */}
+              {benchmark && (
+                <div className="pt-4 border-t space-y-4">
+                  <div>
+                    <h4 className="font-medium text-sm mb-3 text-green-600">MANDATORY SUPPORT PROCESSES</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {benchmark.commonProcesses.support.map((process, idx) => (
+                        <span 
+                          key={idx} 
+                          className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded border"
+                        >
+                          {process}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-medium text-sm mb-3 text-purple-600">MANDATORY MANAGEMENT PROCESSES</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {benchmark.commonProcesses.management.map((process, idx) => (
+                        <span 
+                          key={idx} 
+                          className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded border"
+                        >
+                          {process}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
             </CardContent>
           </Card>
