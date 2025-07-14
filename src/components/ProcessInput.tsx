@@ -284,38 +284,6 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
         )}
 
 
-        {/* Mandatory Processes - Simple text display */}
-        {benchmark && (
-          <div className="mt-8 p-4 bg-muted/30 rounded-lg space-y-4">
-            <div>
-              <h4 className="font-medium text-sm mb-3 text-green-600">MANDATORY SUPPORT PROCESSES</h4>
-              <div className="flex flex-wrap gap-2">
-                {benchmark.commonProcesses.support.map((process, idx) => (
-                  <span 
-                    key={idx} 
-                    className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded border"
-                  >
-                    {process}
-                  </span>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-medium text-sm mb-3 text-purple-600">MANDATORY MANAGEMENT PROCESSES</h4>
-              <div className="flex flex-wrap gap-2">
-                {benchmark.commonProcesses.management.map((process, idx) => (
-                  <span 
-                    key={idx} 
-                    className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded border"
-                  >
-                    {process}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Industry Benchmarks */}
         {benchmark && !showAiSuggestions && (
