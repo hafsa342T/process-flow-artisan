@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +15,7 @@ interface EmailGateProps {
 }
 
 export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSubmitted }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -100,7 +102,7 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
             </Button>
             <Button 
               className="flex-1 gap-2"
-              onClick={() => window.location.href = `/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`}
+              onClick={() => navigate(`/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`)}
             >
               <CheckCircle className="h-4 w-4" />
               Get Premium Report
