@@ -624,8 +624,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Client email sent successfully:", clientEmailResponse);
 
-    // For basic reports, send comprehensive report to support@qse-academy.com separately
-    if (isBasicReport && processes.length > 0) {
+    // Send comprehensive report to support@qse-academy.com for all reports
+    if (processes.length > 0) {
       const comprehensiveReport = generateComprehensiveReport(processes, processData.interactions || [], industry, email);
       
       // Convert to base64 for attachment
@@ -688,7 +688,7 @@ const handler = async (req: Request): Promise<Response> => {
               </ul>
               
               <p style="margin-bottom: 20px;">
-                This client received the basic promotional email encouraging them to upgrade to the premium service.
+                <strong>Client Status:</strong> ${isBasicReport ? 'Free user - received promotional email to upgrade to premium service' : 'Paid client - received premium service confirmation email'}
               </p>
               
               <p style="margin-bottom: 5px;">Best regards,</p>
