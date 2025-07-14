@@ -27,12 +27,29 @@ const PaymentSuccess = () => {
   const email = searchParams.get('email') || '';
   const industry = searchParams.get('industry') || '';
   const sessionId = searchParams.get('session_id') || searchParams.get('sessionId') || '';
+  const paymentParam = searchParams.get('payment') || '';
 
   useEffect(() => {
     const handlePaymentSuccess = async () => {
-      // Skip edge function call and go straight to form if we have email and industry
+      console.log('=== PaymentSuccess Debug ===');
+      console.log('URL:', window.location.href);
+      console.log('Email:', email);
+      console.log('Industry:', industry);
+      console.log('SessionId:', sessionId);
+      console.log('Payment param:', paymentParam);
+      
+      // If we have payment=success AND email AND industry, skip edge function
+      if (paymentParam === 'success' && email && industry) {
+        console.log('✅ All payment parameters found, proceeding directly to form');
+        setPaymentStatus('confirmed');
+        setShowDetailsForm(true);
+        setIsProcessing(false);
+        return;
+      }
+      
+      // Also proceed if we just have email and industry (fallback)
       if (email && industry) {
-        console.log('Payment parameters found, proceeding to form');
+        console.log('✅ Email and industry found, proceeding to form');
         setPaymentStatus('confirmed');
         setShowDetailsForm(true);
         setIsProcessing(false);
@@ -71,7 +88,7 @@ const PaymentSuccess = () => {
     };
 
     handlePaymentSuccess();
-  }, [sessionId, email, industry]);
+  }, [sessionId, email, industry, paymentParam]);
 
   const handleDownload = (format: string) => {
     // TODO: Implement actual download functionality with branded reports
