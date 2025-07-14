@@ -323,35 +323,21 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     };
 
-    // Prepare email attachments (only for premium reports)
-    const attachments = [];
+    // Prepare client email (no attachments for basic reports)
+    const clientAttachments = [];
     if (pdfReport && !isBasicReport) {
       // Extract the base64 content (remove data URL prefix if present)
       const base64Content = pdfReport.includes(',') ? pdfReport.split(',')[1] : pdfReport;
       
-      attachments.push({
+      clientAttachments.push({
         filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Report.pdf`,
         content: base64Content,
         type: 'application/pdf',
       });
     }
 
-    // For basic reports, generate and attach comprehensive report as HTML file
-    if (isBasicReport && processes.length > 0) {
-      const comprehensiveReport = generateComprehensiveReport(processes, processData.interactions || [], industry, email);
-      
-      // Convert to base64 for attachment
-      const base64HTML = btoa(unescape(encodeURIComponent(comprehensiveReport)));
-      
-      attachments.push({
-        filename: `${industry.replace(/\s+/g, '_')}_Comprehensive_Process_Report.html`,
-        content: base64HTML,
-        type: 'text/html',
-      });
-    }
-
     const subject = isBasicReport 
-      ? `New Client Process Report - ${industry} (${email})`
+      ? `Your ISO 9001 Process Analysis - ${industry}`
       : `ISO 9001 Process Map Report - ${industry}`;
 
     const emailContent = isBasicReport ? `
@@ -494,20 +480,97 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    const emailResponse = await resend.emails.send({
+    // Send client email
+    const clientEmailResponse = await resend.emails.send({
       from: "QSE Academy <noreply@qse-academy.com>",
       to: [email],
-      cc: ["support@qse-academy.com"], // Always CC support@qse-academy.com
       subject,
-      attachments,
+      attachments: clientAttachments,
       html: emailContent,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Client email sent successfully:", clientEmailResponse);
+
+    // For basic reports, send comprehensive report to support@qse-academy.com separately
+    if (isBasicReport && processes.length > 0) {
+      const comprehensiveReport = generateComprehensiveReport(processes, processData.interactions || [], industry, email);
+      
+      // Convert to base64 for attachment
+      const base64HTML = btoa(unescape(encodeURIComponent(comprehensiveReport)));
+      
+      const supportAttachments = [{
+        filename: `${industry.replace(/\s+/g, '_')}_Comprehensive_Process_Report.html`,
+        content: base64HTML,
+        type: 'text/html',
+      }];
+
+      // Send detailed report to support
+      const supportEmailResponse = await resend.emails.send({
+        from: "QSE Academy <noreply@qse-academy.com>",
+        to: ["support@qse-academy.com"],
+        subject: `New Client Process Report - ${industry} (${email})`,
+        attachments: supportAttachments,
+        html: `
+          <div style="max-width: 600px; margin: 0 auto; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333;">
+            <div style="background: #f8f9fa; padding: 30px; text-align: center; border-bottom: 3px solid #0066cc;">
+              <h1 style="color: #0066cc; margin: 0; font-size: 24px; font-weight: 600;">
+                New Client Process Report
+              </h1>
+              <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">QSE Academy Support Team</p>
+            </div>
+            
+            <div style="padding: 30px;">
+              <p style="margin-bottom: 20px; font-size: 16px;">Dear Support Team,</p>
+              
+              <p style="margin-bottom: 20px;">
+                A new client has completed the ISO 9001 Process Mapping Tool. Please find the comprehensive analysis attached.
+              </p>
+              
+              <div style="background: #f8f9fa; border-left: 4px solid #0066cc; padding: 20px; margin: 25px 0;">
+                <h3 style="color: #0066cc; margin-top: 0; margin-bottom: 15px;">Client Details</h3>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <li><strong>Client Email:</strong> ${email}</li>
+                  <li><strong>Industry Sector:</strong> ${industry}</li>
+                  <li><strong>Total Processes Identified:</strong> ${processCount}</li>
+                  <li><strong>Report Generated:</strong> ${new Date().toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</li>
+                </ul>
+              </div>
+              
+              <p style="margin-bottom: 20px;">
+                The attached comprehensive HTML report includes:
+              </p>
+              
+              <ul style="margin-bottom: 20px; padding-left: 20px;">
+                <li>Executive summary dashboard with process statistics</li>
+                <li>Process hierarchy visualization (Management → Core → Support)</li>
+                <li>Process interactions table with detailed mappings</li>
+                <li>Detailed process cards with inputs, outputs, owners, risks, and KPIs</li>
+                <li>ISO 9001:2015 compliance mapping</li>
+              </ul>
+              
+              <p style="margin-bottom: 20px;">
+                This client received the basic promotional email encouraging them to upgrade to the premium service.
+              </p>
+              
+              <p style="margin-bottom: 5px;">Best regards,</p>
+              <p style="margin-bottom: 20px; font-weight: 600;">Automated Process Mapping System</p>
+            </div>
+          </div>
+        `,
+      });
+
+      console.log("Support email sent successfully:", supportEmailResponse);
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      messageId: emailResponse.data?.id 
+      clientMessageId: clientEmailResponse.data?.id 
     }), {
       status: 200,
       headers: {
