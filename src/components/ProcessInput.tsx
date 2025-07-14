@@ -165,36 +165,21 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
               </p>
             </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="mandatory-processes" className="text-sm font-medium">Mandatory Processes</Label>
-                <Textarea
-                  id="mandatory-processes"
-                  placeholder="Enter mandatory processes here, one per line..."
-                  rows={4}
-                  className="text-base resize-none"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Add any mandatory processes required for your industry (e.g., Quality Control, Document Management, etc.)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="manual-text" className="text-sm font-medium">Your Core Processes</Label>
-                <Textarea
-                  id="manual-text"
-                  placeholder="Type your processes here, one per line..."
-                  value={coreProcesses}
-                  onChange={(e) => {
-                    onCoreProcessesChange(e.target.value);
-                    setSelectedBenchmarkProcesses(e.target.value.split('\n').filter(p => p.trim()));
-                  }}
-                  className="min-h-[150px] text-base resize-none"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Enter each process on a new line. You can also add processes from the suggestions above.
-                </p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="manual-text" className="text-sm font-medium">Your Core Processes</Label>
+              <Textarea
+                id="manual-text"
+                placeholder="Type your processes here, one per line..."
+                value={coreProcesses}
+                onChange={(e) => {
+                  onCoreProcessesChange(e.target.value);
+                  setSelectedBenchmarkProcesses(e.target.value.split('\n').filter(p => p.trim()));
+                }}
+                className="min-h-[150px] text-base resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter each process on a new line. You can also add processes from the suggestions above.
+              </p>
             </div>
 
             <Button 
@@ -258,6 +243,22 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Static Mandatory Processes Text Box */}
+              <div className="pt-4 border-t">
+                <div className="space-y-2">
+                  <Label htmlFor="mandatory-processes" className="text-sm font-medium">Mandatory Processes</Label>
+                  <Textarea
+                    id="mandatory-processes"
+                    placeholder="Enter mandatory processes here, one per line..."
+                    rows={4}
+                    className="text-base resize-none"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Add any mandatory processes required for your industry (e.g., Quality Control, Document Management, etc.)
+                  </p>
                 </div>
               </div>
 
