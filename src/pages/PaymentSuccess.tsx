@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,13 +11,53 @@ import {
   Home
 } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = useState(true);
+  const [paymentStatus, setPaymentStatus] = useState<'processing' | 'confirmed' | 'error'>('processing');
   
   const email = searchParams.get('email') || '';
   const industry = searchParams.get('industry') || '';
+  const sessionId = searchParams.get('session_id') || '';
+
+  useEffect(() => {
+    const handlePaymentSuccess = async () => {
+      if (!sessionId) {
+        setPaymentStatus('error');
+        setIsProcessing(false);
+        return;
+      }
+
+      try {
+        console.log('Processing payment success for session:', sessionId);
+        
+        const { data, error } = await supabase.functions.invoke('handle-payment-success', {
+          body: { sessionId }
+        });
+        
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        console.log('Payment success processed:', data);
+        setPaymentStatus('confirmed');
+      } catch (error) {
+        console.error('Error processing payment success:', error);
+        setPaymentStatus('error');
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    if (sessionId) {
+      handlePaymentSuccess();
+    } else {
+      setIsProcessing(false);
+    }
+  }, [sessionId]);
 
   const handleDownload = (format: string) => {
     // TODO: Implement actual download functionality with branded reports
@@ -64,10 +104,21 @@ const PaymentSuccess = () => {
               </div>
               <div>
                 <div className="text-sm text-muted-foreground">Status</div>
-                <Badge variant="default" className="gap-1">
-                  <Clock className="h-3 w-3" />
-                  Processing
-                </Badge>
+                {isProcessing ? (
+                  <Badge variant="secondary" className="gap-1">
+                    <Clock className="h-3 w-3" />
+                    Verifying Payment...
+                  </Badge>
+                ) : paymentStatus === 'confirmed' ? (
+                  <Badge variant="default" className="gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Payment Confirmed
+                  </Badge>
+                ) : (
+                  <Badge variant="destructive" className="gap-1">
+                    Payment Error
+                  </Badge>
+                )}
               </div>
             </div>
           </CardContent>

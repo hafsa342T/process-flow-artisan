@@ -29,16 +29,39 @@ const Payment = () => {
     setIsProcessing(true);
     
     try {
-      // TODO: Implement Stripe payment when API key is provided
       console.log('Processing payment for:', { email, industry });
       
-      // For now, simulate payment process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Get process data from localStorage (stored during process mapping)
+      const processDataStr = localStorage.getItem('processData');
+      if (!processDataStr) {
+        throw new Error('No process data found. Please create a process map first.');
+      }
       
-      // Redirect to success page or download page
-      navigate(`/payment-success?email=${email}&industry=${industry}`);
+      const processData = JSON.parse(processDataStr);
+      
+      // Create Stripe checkout session
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { 
+          email, 
+          industry,
+          processData 
+        }
+      });
+      
+      if (error) {
+        throw new Error(`Payment error: ${error.message}`);
+      }
+      
+      // Redirect to Stripe checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
     } catch (error) {
       console.error('Payment error:', error);
+      alert(`Payment failed: ${error.message}`);
     } finally {
       setIsProcessing(false);
     }

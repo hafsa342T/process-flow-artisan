@@ -427,6 +427,12 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
 
   const handleEmailSubmitted = (email: string) => {
     setUserEmail(email);
+    
+    // Store process data in localStorage for payment page
+    if (generatedData) {
+      localStorage.setItem('processData', JSON.stringify(generatedData));
+    }
+    
     // Redirect to payment page instead of results
     window.location.href = `/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`;
   };
