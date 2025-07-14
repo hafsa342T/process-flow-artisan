@@ -121,18 +121,35 @@ Generate a comprehensive ISO 9001:2015 process map for the ${industry} industry 
 
 User mentioned these processes: ${userProcesses}
 
+MANDATORY PROCESSES TO INCLUDE (regardless of industry):
+
+Management Processes (REQUIRED):
+- Leadership
+- Quality Management
+- Risk & Opportunity Management
+
+Support Processes (REQUIRED):
+- Training, Competence & Awareness
+- Customer Satisfaction
+- Infrastructure & Work Environment
+- Continual Improvement
+
+You can add additional management and support processes, but these are mandatory.
+
 CRITICAL: Generate industry-specific processes relevant to ${industry} following ISO 9001:2015 standards. For example:
 - If dental clinic: include patient registration, appointment scheduling, clinical examinations, treatment planning, dental procedures, sterilization, billing, patient records management
 - If restaurant: include menu planning, inventory management, food preparation, order taking, cooking, serving, cleaning, quality control
 - If law firm: include client intake, case management, legal research, document preparation, court representation, billing
 
 Requirements:
-1. Include realistic ${industry} industry processes (core, support, management) according to ISO 9001:2015
-2. Add detailed process interactions showing how processes feed into each other
-3. Categorize all processes correctly (core/support/management) per ISO 9001:2015
-4. Include realistic inputs, outputs, risks, KPIs, and responsible roles for ${industry}
-5. Map to relevant ISO 9001:2015 clauses (4.4, 8.1, 8.2, 8.3, etc.)
-6. Show process flow relationships with descriptions per ISO 9001:2015 process approach
+1. MUST include all mandatory management and support processes listed above
+2. Include realistic ${industry} industry core processes
+3. Add additional management/support processes as needed for ${industry}
+4. Add detailed process interactions showing how processes feed into each other
+5. Categorize all processes correctly (core/support/management) per ISO 9001:2015
+6. Include realistic inputs, outputs, risks, KPIs, and responsible roles for ${industry}
+7. Map to relevant ISO 9001:2015 clauses (4.4, 8.1, 8.2, 8.3, etc.)
+8. Show process flow relationships with descriptions per ISO 9001:2015 process approach
 
 Return ONLY valid JSON in this exact format:
 {
@@ -174,7 +191,7 @@ Return ONLY valid JSON in this exact format:
   }
 }
 
-Focus on ${industry} industry best practices and current ISO 9001:2015 requirements.
+Focus on ${industry} industry best practices and current ISO 9001:2015 requirements with mandatory processes included.
 `;
   };
   const generateEnhancedBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
