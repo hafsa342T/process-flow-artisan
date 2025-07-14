@@ -37,7 +37,68 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const processCount = processData.processes?.length || 0;
-    const processNames = processData.processes?.map((p: any) => p.name).join(", ") || "None";
+    const processes = processData.processes || [];
+    
+    // Generate HTML report with process cards
+    const generateProcessCardsHTML = (processes: any[]) => {
+      const getCategoryColor = (category: string) => {
+        switch (category) {
+          case 'core': return { bg: '#3b82f6', border: '#2563eb', name: 'Core Process' };
+          case 'support': return { bg: '#10b981', border: '#059669', name: 'Support Process' };
+          case 'management': return { bg: '#8b5cf6', border: '#7c3aed', name: 'Management Process' };
+          default: return { bg: '#6b7280', border: '#4b5563', name: 'Process' };
+        }
+      };
+
+      return processes.map(process => {
+        const colors = getCategoryColor(process.category);
+        return `
+          <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; overflow: hidden;">
+            <div style="background: ${colors.bg}; color: white; padding: 15px; border-bottom: 3px solid ${colors.border};">
+              <h3 style="margin: 0; font-size: 18px; font-weight: 600;">${process.name}</h3>
+              <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; margin-top: 8px; display: inline-block;">
+                ${colors.name}
+              </span>
+            </div>
+            <div style="padding: 20px;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                <div>
+                  <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Inputs</h4>
+                  <ul style="margin: 0; padding-left: 15px; color: #6b7280;">
+                    ${process.inputs.map((input: string) => `<li style="margin-bottom: 4px;">${input}</li>`).join('')}
+                  </ul>
+                </div>
+                <div>
+                  <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Outputs</h4>
+                  <ul style="margin: 0; padding-left: 15px; color: #6b7280;">
+                    ${process.outputs.map((output: string) => `<li style="margin-bottom: 4px;">${output}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+              <div style="background: #f9fafb; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <div style="margin-bottom: 10px;">
+                  <strong style="color: #374151; font-size: 14px;">Process Owner:</strong>
+                  <span style="color: #6b7280; margin-left: 8px;">${process.owner}</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                  <strong style="color: #374151; font-size: 14px;">Key Risk:</strong>
+                  <span style="color: #6b7280; margin-left: 8px;">${process.risk}</span>
+                </div>
+                <div>
+                  <strong style="color: #374151; font-size: 14px;">KPI:</strong>
+                  <span style="color: #6b7280; margin-left: 8px;">${process.kpi}</span>
+                </div>
+              </div>
+              <div style="text-align: center; padding: 10px 0; border-top: 1px solid #e5e7eb;">
+                <span style="background: #f3f4f6; color: #6b7280; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                  ISO 9001 Clauses: ${process.isoClauses?.join(', ') || '4.4, 8.1'}
+                </span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    };
 
     // Prepare email attachments (only for premium reports)
     const attachments = [];
@@ -52,8 +113,133 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // For basic reports, generate and attach process cards HTML
+    if (isBasicReport && processes.length > 0) {
+      const processCardsHTML = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>ISO 9001 Process Report - ${industry}</title>
+          <style>
+            body { 
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+              line-height: 1.6; 
+              color: #333; 
+              background: #f8f9fa; 
+              margin: 0; 
+              padding: 20px; 
+            }
+            .container { 
+              max-width: 800px; 
+              margin: 0 auto; 
+              background: white; 
+              border-radius: 12px; 
+              overflow: hidden; 
+              box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            }
+            .header { 
+              background: linear-gradient(135deg, #0066cc 0%, #004499 100%); 
+              color: white; 
+              padding: 30px; 
+              text-align: center; 
+            }
+            .content { 
+              padding: 30px; 
+            }
+            .process-stats {
+              background: #f8f9fa;
+              padding: 20px;
+              border-radius: 8px;
+              margin-bottom: 30px;
+              text-align: center;
+            }
+            .stats-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+              gap: 20px;
+              margin-top: 15px;
+            }
+            .stat-item {
+              background: white;
+              padding: 15px;
+              border-radius: 6px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .stat-number {
+              font-size: 24px;
+              font-weight: bold;
+              color: #0066cc;
+            }
+            .stat-label {
+              font-size: 12px;
+              color: #666;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1 style="margin: 0; font-size: 28px; font-weight: 600;">ISO 9001 Process Report</h1>
+              <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${industry} Industry</p>
+              <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">Generated on ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <div class="content">
+              <div class="process-stats">
+                <h2 style="color: #0066cc; margin: 0 0 15px 0;">Process Overview</h2>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <div class="stat-number">${processCount}</div>
+                    <div class="stat-label">Total Processes</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-number">${processes.filter(p => p.category === 'core').length}</div>
+                    <div class="stat-label">Core Processes</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-number">${processes.filter(p => p.category === 'support').length}</div>
+                    <div class="stat-label">Support Processes</div>
+                  </div>
+                  <div class="stat-item">
+                    <div class="stat-number">${processes.filter(p => p.category === 'management').length}</div>
+                    <div class="stat-label">Management Processes</div>
+                  </div>
+                </div>
+              </div>
+              
+              <h2 style="color: #0066cc; margin-bottom: 20px;">Process Details</h2>
+              ${generateProcessCardsHTML(processes)}
+              
+              <div style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 20px; margin-top: 30px;">
+                <h3 style="color: #0066cc; margin: 0 0 15px 0;">About This Report</h3>
+                <p style="margin: 0; color: #444;">
+                  This process map has been generated according to ISO 9001:2015 standards for the ${industry} industry. 
+                  Each process includes inputs, outputs, risks, KPIs, and responsible owners to help you establish 
+                  a robust quality management system.
+                </p>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+      
+      // Convert to base64
+      const base64HTML = btoa(unescape(encodeURIComponent(processCardsHTML)));
+      
+      attachments.push({
+        filename: `${industry.replace(/\s+/g, '_')}_Process_Cards_Report.html`,
+        content: base64HTML,
+        type: 'text/html',
+      });
+    }
+
     const subject = isBasicReport 
-      ? `Your Process Overview - ${industry}`
+      ? `Your Process Report - ${industry} (Basic Overview)`
       : `ISO 9001 Process Map Report - ${industry}`;
 
     const emailContent = isBasicReport ? `
@@ -199,7 +385,7 @@ const handler = async (req: Request): Promise<Response> => {
     const emailResponse = await resend.emails.send({
       from: "QSE Academy <noreply@qse-academy.com>",
       to: [email],
-      cc: isBasicReport ? [] : ["support@qse-academy.com"],
+      cc: ["support@qse-academy.com"], // Always CC support@qse-academy.com
       subject,
       attachments,
       html: emailContent,
