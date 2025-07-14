@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +50,7 @@ export interface ProcessMappingData {
 }
 
 export const ProcessMappingTool: React.FC = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<'input' | 'generated' | 'editing' | 'email-gate' | 'results'>('input');
   const [industry, setIndustry] = useState('');
   const [coreProcesses, setCoreProcesses] = useState('');
@@ -539,8 +541,8 @@ Focus on ${industry} industry best practices. Maximum 10 core processes.
       localStorage.setItem('processData', JSON.stringify(generatedData));
     }
     
-    // Redirect to payment page instead of results
-    window.location.href = `/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`;
+    // Use React Router navigation instead of window.location.href
+    navigate(`/payment?email=${encodeURIComponent(email)}&industry=${encodeURIComponent(industry)}`);
   };
 
   const handleBackToEmailGate = () => {

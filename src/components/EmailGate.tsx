@@ -95,7 +95,7 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
             <Button 
               variant="outline" 
               className="flex-1 gap-2"
-              onClick={() => window.location.reload()}
+              onClick={() => navigate('/')}
             >
               <FileText className="h-4 w-4" />
               New Mapping
