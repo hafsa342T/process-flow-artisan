@@ -80,7 +80,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
         const processes = data.processes.map((p: any) => p.name);
         setAiSuggestions(processes);
         setShowAiSuggestions(true);
-        toast.success('AI suggestions generated successfully!');
+        
       }
     } catch (error) {
       console.error('Error getting AI suggestions:', error);
