@@ -165,18 +165,23 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="processes" className="text-sm font-medium">Your Processes</Label>
-              <Textarea
-                id="processes"
-                placeholder="Add processes from suggestions or enter your own..."
-                value={coreProcesses}
-                onChange={(e) => {
-                  onCoreProcessesChange(e.target.value);
-                  setSelectedBenchmarkProcesses(e.target.value.split('\n').filter(p => p.trim()));
-                }}
-                className="min-h-[200px] text-base resize-none"
-              />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="manual-text" className="text-sm font-medium">Manual Process Entry</Label>
+                <Textarea
+                  id="manual-text"
+                  placeholder="Type your processes here, one per line..."
+                  value={coreProcesses}
+                  onChange={(e) => {
+                    onCoreProcessesChange(e.target.value);
+                    setSelectedBenchmarkProcesses(e.target.value.split('\n').filter(p => p.trim()));
+                  }}
+                  className="min-h-[150px] text-base resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter each process on a new line. You can also add processes from the suggestions above.
+                </p>
+              </div>
             </div>
 
             <Button 
