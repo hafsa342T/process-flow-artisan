@@ -194,8 +194,26 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
   const generateEnhancedBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
     const userProcessList = userProcesses.split('\n').filter(p => p.trim());
     
-    // Start with only user processes - no mandatory processes
-    const allProcesses = [...userProcessList];
+    // MANDATORY ISO 9001 processes that MUST always be included
+    const mandatoryProcesses = [
+      'Leadership',
+      'Quality Management', 
+      'Risk & Opportunity Management',
+      'Training, Competence & Awareness',
+      'Customer Satisfaction',
+      'Infrastructure & Work Environment',
+      'Continual improvement'
+    ];
+    
+    // Start with mandatory processes
+    const allProcesses = [...mandatoryProcesses];
+    
+    // Add user processes
+    userProcessList.forEach(up => {
+      if (!allProcesses.some(mp => mp.toLowerCase().includes(up.toLowerCase().split(' ')[0].toLowerCase()))) {
+        allProcesses.push(up);
+      }
+    });
     
     // Add benchmark processes if available
     if (benchmark) {
@@ -221,8 +239,32 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     const processes: ProcessData[] = allProcesses.map((name, index) => {
       let category: 'core' | 'support' | 'management' = 'core';
       
-      // Categorize processes based on benchmark data or intelligent defaults
-      if (benchmark?.commonProcesses.core.includes(name)) {
+      // MANDATORY ISO 9001 processes that MUST always be included
+      const mandatoryProcesses = [
+        'Leadership',
+        'Quality Management', 
+        'Risk & Opportunity Management',
+        'Training, Competence & Awareness',
+        'Customer Satisfaction',
+        'Infrastructure & Work Environment',
+        'Continual improvement'
+      ];
+      
+      // Categorize mandatory ISO 9001 processes correctly FIRST
+      const nameLower = name.toLowerCase();
+      if (mandatoryProcesses.includes(name)) {
+        // Management processes
+        if (name === 'Leadership' || name === 'Quality Management' || name === 'Risk & Opportunity Management') {
+          category = 'management';
+        }
+        // Support processes  
+        else if (name === 'Training, Competence & Awareness' || name === 'Customer Satisfaction' || 
+                 name === 'Infrastructure & Work Environment' || name === 'Continual improvement') {
+          category = 'support';
+        }
+      }
+      // Then categorize benchmark processes
+      else if (benchmark?.commonProcesses.core.includes(name)) {
         category = 'core';
       } else if (benchmark?.commonProcesses.support.includes(name)) {
         category = 'support';
@@ -230,7 +272,6 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
         category = 'management';
       } else {
         // For user processes without benchmark data, use intelligent categorization
-        const nameLower = name.toLowerCase();
         if (nameLower.includes('management') || nameLower.includes('leadership') || nameLower.includes('strategy') || nameLower.includes('planning')) {
           category = 'management';
         } else if (nameLower.includes('support') || nameLower.includes('training') || nameLower.includes('hr') || nameLower.includes('maintenance') || nameLower.includes('it')) {
@@ -330,8 +371,26 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
       ];
     }
     
-    // Start with only user processes - no mandatory processes
-    const allProcesses = [...userProcessList];
+    // MANDATORY ISO 9001 processes that MUST always be included
+    const mandatoryProcesses = [
+      'Leadership',
+      'Quality Management', 
+      'Risk & Opportunity Management',
+      'Training, Competence & Awareness',
+      'Customer Satisfaction',
+      'Infrastructure & Work Environment',
+      'Continual improvement'
+    ];
+    
+    // Start with mandatory processes
+    const allProcesses = [...mandatoryProcesses];
+    
+    // Add user processes
+    userProcessList.forEach(up => {
+      if (!allProcesses.some(mp => mp.toLowerCase().includes(up.toLowerCase().split(' ')[0].toLowerCase()))) {
+        allProcesses.push(up);
+      }
+    });
     
     // Add industry-specific processes
     industryProcesses.forEach(ip => {
@@ -343,25 +402,33 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     const processes: ProcessData[] = allProcesses.map((name, index) => {
       let category: 'core' | 'support' | 'management' = 'core';
       
-      // Categorize processes using intelligent defaults
+      // Categorize mandatory ISO 9001 processes correctly
       const nameLower = name.toLowerCase();
-      if (nameLower.includes('management') || nameLower.includes('leadership') || nameLower.includes('strategy') || nameLower.includes('planning')) {
+      if (mandatoryProcesses.includes(name)) {
+        // Management processes
+        if (name === 'Leadership' || name === 'Quality Management' || name === 'Risk & Opportunity Management') {
+          category = 'management';
+        }
+        // Support processes  
+        else if (name === 'Training, Competence & Awareness' || name === 'Customer Satisfaction' || 
+                 name === 'Infrastructure & Work Environment' || name === 'Continual improvement') {
+          category = 'support';
+        }
+      }
+      // Categorize other processes using intelligent defaults
+      else if (nameLower.includes('management') || nameLower.includes('leadership') || nameLower.includes('strategy') || nameLower.includes('planning')) {
         category = 'management';
-      } else if (nameLower.includes('support') || nameLower.includes('training') || nameLower.includes('hr') || nameLower.includes('maintenance') || nameLower.includes('it')) {
+      } else if (nameLower.includes('support') || nameLower.includes('training') || nameLower.includes('hr') || 
+                 nameLower.includes('maintenance') || nameLower.includes('it') || nameLower.includes('quality') || 
+                 nameLower.includes('control') || nameLower.includes('assurance') || nameLower.includes('satisfaction') ||
+                 nameLower.includes('infrastructure') || nameLower.includes('improvement')) {
         category = 'support';
       } else {
-        // Industry processes are typically core, but use intelligent categorization
+        // Industry processes are typically core
         if (industryProcesses.includes(name)) {
           category = 'core';
         } else {
-          // For user processes, make intelligent decisions
-          if (nameLower.includes('quality') || nameLower.includes('control') || nameLower.includes('assurance')) {
-            category = 'support';
-          } else if (nameLower.includes('admin') || nameLower.includes('oversight')) {
-            category = 'management';
-          } else {
-            category = 'core'; // Default to core for business processes
-          }
+          category = 'core'; // Default to core for business processes
         }
       }
       
