@@ -247,7 +247,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
         )}
 
         {/* Mandatory Processes - Outside the suggestions card */}
-        {showAiSuggestions && benchmark && (
+        {benchmark && (
           <div className="space-y-4">
             <div>
               <h4 className="font-medium text-sm mb-3 text-process-support">MANDATORY SUPPORT PROCESSES</h4>
