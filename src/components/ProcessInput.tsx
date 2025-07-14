@@ -246,35 +246,33 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
           </Card>
         )}
 
-        {/* Mandatory Processes - Outside the suggestions card */}
+        {/* Mandatory Processes - Simple text display */}
         {benchmark && (
-          <div className="space-y-4">
+          <div className="mt-8 p-4 bg-muted/30 rounded-lg space-y-4">
             <div>
-              <h4 className="font-medium text-sm mb-3 text-process-support">MANDATORY SUPPORT PROCESSES</h4>
+              <h4 className="font-medium text-sm mb-3 text-green-600">MANDATORY SUPPORT PROCESSES</h4>
               <div className="flex flex-wrap gap-2">
                 {benchmark.commonProcesses.support.map((process, idx) => (
-                  <Badge 
+                  <span 
                     key={idx} 
-                    variant="outline" 
-                    className="text-xs bg-process-support/10 text-process-support border-process-support/30"
+                    className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded border"
                   >
                     {process}
-                  </Badge>
+                  </span>
                 ))}
               </div>
             </div>
             
             <div>
-              <h4 className="font-medium text-sm mb-3 text-process-management">MANDATORY MANAGEMENT PROCESSES</h4>
+              <h4 className="font-medium text-sm mb-3 text-purple-600">MANDATORY MANAGEMENT PROCESSES</h4>
               <div className="flex flex-wrap gap-2">
                 {benchmark.commonProcesses.management.map((process, idx) => (
-                  <Badge 
+                  <span 
                     key={idx} 
-                    variant="outline" 
-                    className="text-xs bg-process-management/10 text-process-management border-process-management/30"
+                    className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded border"
                   >
                     {process}
-                  </Badge>
+                  </span>
                 ))}
               </div>
             </div>
