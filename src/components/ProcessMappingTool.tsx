@@ -208,29 +208,49 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     // Start with mandatory processes
     const allProcesses = [...mandatoryProcesses];
     
-    // Add user processes
+    // Add user processes (avoiding redundancy with mandatory processes)
     userProcessList.forEach(up => {
-      if (!allProcesses.some(mp => mp.toLowerCase().includes(up.toLowerCase().split(' ')[0].toLowerCase()))) {
+      if (!mandatoryProcesses.some(mp => {
+        const upLower = up.toLowerCase();
+        const mpLower = mp.toLowerCase();
+        return upLower.includes(mpLower.split(' ')[0].toLowerCase()) || 
+               mpLower.includes(upLower.split(' ')[0].toLowerCase());
+      })) {
         allProcesses.push(up);
       }
     });
     
-    // Add benchmark processes if available
+    // Add benchmark processes if available (avoiding redundancy)
     if (benchmark) {
       benchmark.commonProcesses.core.forEach((process: string) => {
-        if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
+        if (!allProcesses.some(up => {
+          const pLower = process.toLowerCase();
+          const upLower = up.toLowerCase();
+          return pLower.includes(upLower.split(' ')[0].toLowerCase()) || 
+                 upLower.includes(pLower.split(' ')[0].toLowerCase());
+        })) {
           allProcesses.push(process);
         }
       });
       
       benchmark.commonProcesses.support.forEach((process: string) => {
-        if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
+        if (!allProcesses.some(up => {
+          const pLower = process.toLowerCase();
+          const upLower = up.toLowerCase();
+          return pLower.includes(upLower.split(' ')[0].toLowerCase()) || 
+                 upLower.includes(pLower.split(' ')[0].toLowerCase());
+        })) {
           allProcesses.push(process);
         }
       });
       
       benchmark.commonProcesses.management.forEach((process: string) => {
-        if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
+        if (!allProcesses.some(up => {
+          const pLower = process.toLowerCase();
+          const upLower = up.toLowerCase();
+          return pLower.includes(upLower.split(' ')[0].toLowerCase()) || 
+                 upLower.includes(pLower.split(' ')[0].toLowerCase());
+        })) {
           allProcesses.push(process);
         }
       });
@@ -385,16 +405,26 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     // Start with mandatory processes
     const allProcesses = [...mandatoryProcesses];
     
-    // Add user processes
+    // Add user processes (avoiding redundancy with mandatory processes)
     userProcessList.forEach(up => {
-      if (!allProcesses.some(mp => mp.toLowerCase().includes(up.toLowerCase().split(' ')[0].toLowerCase()))) {
+      if (!mandatoryProcesses.some(mp => {
+        const upLower = up.toLowerCase();
+        const mpLower = mp.toLowerCase();
+        return upLower.includes(mpLower.split(' ')[0].toLowerCase()) || 
+               mpLower.includes(upLower.split(' ')[0].toLowerCase());
+      })) {
         allProcesses.push(up);
       }
     });
     
-    // Add industry-specific processes
+    // Add industry-specific processes (avoiding redundancy)
     industryProcesses.forEach(ip => {
-      if (!allProcesses.some(up => up.toLowerCase().includes(ip.toLowerCase().split(' ')[0].toLowerCase()))) {
+      if (!allProcesses.some(up => {
+        const ipLower = ip.toLowerCase();
+        const upLower = up.toLowerCase();
+        return ipLower.includes(upLower.split(' ')[0].toLowerCase()) || 
+               upLower.includes(ipLower.split(' ')[0].toLowerCase());
+      })) {
         allProcesses.push(ip);
       }
     });

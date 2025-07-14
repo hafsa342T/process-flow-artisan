@@ -203,10 +203,10 @@ Add industry-specific core processes alongside these mandatory ones. Focus on re
       }
     ];
     
-    // Merge AI-generated processes with mandatory processes, ensuring mandatory ones are always included
+    // Merge AI-generated processes with mandatory processes (additive approach)
     let allProcesses = [...mandatoryProcesses];
     
-    // Add AI-generated processes that are not already covered by mandatory processes
+    // Add AI-generated processes, allowing additional management/support processes
     if (parsed.processes) {
       const aiProcesses = parsed.processes.map((p: any, index: number) => ({
         id: p.id || String(mandatoryProcesses.length + index + 1),
@@ -220,11 +220,15 @@ Add industry-specific core processes alongside these mandatory ones. Focus on re
         isoClauses: Array.isArray(p.isoClauses) ? p.isoClauses : ['8.1']
       }));
       
-      // Filter out AI processes that duplicate mandatory process names
+      // Filter out AI processes that have similar names to mandatory processes (avoid redundancy)
       const mandatoryNames = mandatoryProcesses.map(p => p.name.toLowerCase());
-      const uniqueAiProcesses = aiProcesses.filter(p => 
-        !mandatoryNames.includes(p.name.toLowerCase())
-      );
+      const uniqueAiProcesses = aiProcesses.filter(p => {
+        const pNameLower = p.name.toLowerCase();
+        return !mandatoryNames.some(mName => 
+          pNameLower.includes(mName.split(' ')[0].toLowerCase()) || 
+          mName.includes(pNameLower.split(' ')[0].toLowerCase())
+        );
+      });
       
       allProcesses = [...mandatoryProcesses, ...uniqueAiProcesses];
     }
