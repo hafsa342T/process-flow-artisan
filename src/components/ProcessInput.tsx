@@ -118,7 +118,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
           <Brain className="h-10 w-10 text-primary" />
           <div className="text-left">
             <h2 className="text-2xl font-bold text-primary">Intelligent Process Generation</h2>
-            <p className="text-primary/80">Industry benchmarks + Smart analysis = Comprehensive ISO 9001 documentation</p>
+            <p className="text-primary/80">Industry Benchmarks + Smart Analysis = Process Maps Aligned with ISO 9001</p>
           </div>
         </div>
       </div>
