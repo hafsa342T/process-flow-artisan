@@ -37,6 +37,7 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
   useEffect(() => {
     if (industry.trim()) {
       const foundBenchmark = getIndustryBenchmark(industry);
+      console.log('Industry:', industry, 'Found benchmark:', foundBenchmark);
       setBenchmark(foundBenchmark);
     } else {
       setBenchmark(null);
@@ -245,6 +246,11 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
             </CardContent>
           </Card>
         )}
+
+        {/* Debug info */}
+        <div className="p-2 bg-yellow-100 text-xs">
+          Industry: {industry} | Benchmark: {benchmark ? 'Found' : 'Not found'} | AI: {showAiSuggestions ? 'Yes' : 'No'}
+        </div>
 
         {/* Mandatory Processes - Simple text display */}
         {benchmark && (
