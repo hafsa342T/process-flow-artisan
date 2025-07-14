@@ -330,17 +330,17 @@ const handler = async (req: Request): Promise<Response> => {
       const base64Content = pdfReport.includes(',') ? pdfReport.split(',')[1] : pdfReport;
       
       attachments.push({
-        filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Report.html`,
+        filename: `${industry.replace(/\s+/g, '_')}_ISO9001_Process_Report.pdf`,
         content: base64Content,
-        type: 'text/html',
+        type: 'application/pdf',
       });
     }
 
-    // For basic reports, generate and attach comprehensive report
+    // For basic reports, generate and attach comprehensive report as HTML file
     if (isBasicReport && processes.length > 0) {
       const comprehensiveReport = generateComprehensiveReport(processes, processData.interactions || [], industry, email);
       
-      // Convert to base64
+      // Convert to base64 for attachment
       const base64HTML = btoa(unescape(encodeURIComponent(comprehensiveReport)));
       
       attachments.push({
