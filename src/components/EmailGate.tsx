@@ -95,7 +95,7 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
             <Button 
               variant="outline" 
               className="flex-1 gap-2"
-              onClick={() => navigate('/')}
+              onClick={() => window.open('https://www.qse-academy.com/iso-9001-process-mapping-tool/', '_blank')}
             >
               <FileText className="h-4 w-4" />
               New Mapping

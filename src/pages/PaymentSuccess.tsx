@@ -208,7 +208,7 @@ const PaymentSuccess = () => {
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => navigate('/')} className="flex-1 gap-2">
+            <Button variant="outline" onClick={() => window.open('https://www.qse-academy.com/iso-9001-process-mapping-tool/', '_blank')} className="flex-1 gap-2">
               <Home className="h-4 w-4" />
               Create New Mapping
             </Button>
