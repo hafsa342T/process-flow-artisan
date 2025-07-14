@@ -323,7 +323,7 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     };
 
-    // Prepare client email (no attachments for basic reports)
+    // Prepare client email attachments
     const clientAttachments = [];
     if (pdfReport && !isBasicReport) {
       // Extract the base64 content (remove data URL prefix if present)
@@ -336,8 +336,20 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // For basic reports, also attach the comprehensive report to client
+    if (isBasicReport && processes.length > 0) {
+      const comprehensiveReport = generateComprehensiveReport(processes, processData.interactions || [], industry, email);
+      const base64HTML = btoa(unescape(encodeURIComponent(comprehensiveReport)));
+      
+      clientAttachments.push({
+        filename: `${industry.replace(/\s+/g, '_')}_Process_Report_Basic_Overview.html`,
+        content: base64HTML,
+        type: 'text/html',
+      });
+    }
+
     const subject = isBasicReport 
-      ? `Your ISO 9001 Process Analysis - ${industry}`
+      ? `Your Process Report - ${industry} (Basic Overview)`
       : `ISO 9001 Process Map Report - ${industry}`;
 
     const emailContent = isBasicReport ? `
