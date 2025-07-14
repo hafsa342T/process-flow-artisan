@@ -252,10 +252,6 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
           </Card>
         )}
 
-        {/* Debug info */}
-        <div className="p-2 bg-yellow-100 text-xs">
-          Industry: {industry} | Benchmark: {benchmark ? 'Found' : 'Not found'} | AI: {showAiSuggestions ? 'Yes' : 'No'}
-        </div>
 
         {/* Mandatory Processes - Simple text display */}
         {benchmark && (
