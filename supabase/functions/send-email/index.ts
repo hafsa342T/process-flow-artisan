@@ -480,7 +480,6 @@ const handler = async (req: Request): Promise<Response> => {
           <h1 style="color: #0066cc; margin: 0; font-size: 24px; font-weight: 600;">
             QSE Academy
           </h1>
-          <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Quality, Safety & Environmental Training</p>
         </div>
         
         <div style="padding: 30px;">
@@ -536,7 +535,7 @@ const handler = async (req: Request): Promise<Response> => {
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
           <p style="margin: 0; color: #666; font-size: 12px;">
-            QSE Academy | Quality, Safety & Environmental Training<br>
+            QSE Academy<br>
             Web: <a href="https://qse-academy.com" style="color: #0066cc;">qse-academy.com</a> | 
             Email: <a href="mailto:support@qse-academy.com" style="color: #0066cc;">support@qse-academy.com</a>
           </p>
@@ -548,7 +547,7 @@ const handler = async (req: Request): Promise<Response> => {
           <h1 style="color: #0066cc; margin: 0; font-size: 24px; font-weight: 600;">
             QSE Academy
           </h1>
-          <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Quality, Safety & Environmental Training</p>
+          
         </div>
         
         <div style="padding: 30px;">
@@ -603,7 +602,7 @@ const handler = async (req: Request): Promise<Response> => {
         
         <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
           <p style="margin: 0; color: #666; font-size: 12px;">
-            QSE Academy | Quality, Safety & Environmental Training<br>
+            QSE Academy<br>
             Web: <a href="https://qse-academy.com" style="color: #0066cc;">qse-academy.com</a> | 
             Email: <a href="mailto:support@qse-academy.com" style="color: #0066cc;">support@qse-academy.com</a>
           </p>
