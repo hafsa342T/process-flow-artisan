@@ -41,7 +41,13 @@ Examples:
 - Law firm: ["Client Intake", "Case Management", "Legal Research", "Document Preparation", "Court Representation", "Client Communication", "Billing & Time Tracking", "Compliance Management"]`;
       maxTokens = 800;
     } else {
-      systemPrompt = 'You are an ISO 9001:2015 process mapping expert. Generate comprehensive process documentation in JSON format. Always include benchmark industry processes even if not mentioned by the user. Focus on realistic process interactions and flows.';
+      systemPrompt = `You are an ISO 9001:2015 process mapping expert. Generate comprehensive process documentation in JSON format. 
+
+CRITICAL REQUIREMENT: The following ISO 9001 processes are MANDATORY and MUST be included:
+- Management Processes: Leadership, Quality Management, Risk & Opportunity Management  
+- Support Processes: Training Competence & Awareness, Customer Satisfaction, Infrastructure & Work Environment, Continual improvement
+
+Add industry-specific core processes alongside these mandatory ones. Focus on realistic process interactions and flows.`;
       userPrompt = prompt;
       maxTokens = 4000;
     }
@@ -114,10 +120,96 @@ Examples:
 
     const parsed = JSON.parse(jsonMatch[0])
     
-    // Validate and format the response
-    const processData = {
-      processes: parsed.processes?.map((p: any, index: number) => ({
-        id: p.id || String(index + 1),
+    // MANDATORY ISO 9001 processes that MUST always be included
+    const mandatoryProcesses = [
+      // Management Processes
+      {
+        id: 'mgmt_leadership',
+        name: 'Leadership',
+        category: 'management',
+        inputs: ['Organizational context', 'Customer requirements', 'Stakeholder needs'],
+        outputs: ['Quality policy', 'Strategic direction', 'Leadership commitment'],
+        risk: 'Lack of leadership commitment affecting quality management system',
+        kpi: 'Leadership engagement score, quality policy awareness',
+        owner: 'Top Management',
+        isoClauses: ['5.1', '5.2', '5.3']
+      },
+      {
+        id: 'mgmt_quality',
+        name: 'Quality Management',
+        category: 'management',
+        inputs: ['Quality policy', 'Process performance data', 'Customer feedback'],
+        outputs: ['Quality objectives', 'Quality management system', 'Process improvements'],
+        risk: 'Quality management system failure leading to non-compliance',
+        kpi: 'Quality objectives achievement, customer satisfaction score',
+        owner: 'Quality Manager',
+        isoClauses: ['4.4', '5.2', '6.2']
+      },
+      {
+        id: 'mgmt_risk',
+        name: 'Risk & Opportunity Management',
+        category: 'management',
+        inputs: ['Internal context', 'External context', 'Process risks'],
+        outputs: ['Risk register', 'Opportunity identification', 'Risk mitigation plans'],
+        risk: 'Failure to identify and manage risks affecting quality',
+        kpi: 'Risk mitigation effectiveness, opportunity realization rate',
+        owner: 'Risk Manager',
+        isoClauses: ['6.1', '8.1', '9.3']
+      },
+      // Support Processes
+      {
+        id: 'sup_training',
+        name: 'Training, Competence & Awareness',
+        category: 'support',
+        inputs: ['Competence requirements', 'Training needs', 'Skill gaps'],
+        outputs: ['Training plans', 'Competence records', 'Awareness programs'],
+        risk: 'Inadequate competence leading to quality failures',
+        kpi: 'Training completion rate, competence assessment scores',
+        owner: 'HR Manager',
+        isoClauses: ['7.2', '7.3']
+      },
+      {
+        id: 'sup_customer_sat',
+        name: 'Customer Satisfaction',
+        category: 'support',
+        inputs: ['Customer feedback', 'Survey data', 'Complaints'],
+        outputs: ['Satisfaction reports', 'Improvement actions', 'Customer retention data'],
+        risk: 'Declining customer satisfaction affecting business performance',
+        kpi: 'Customer satisfaction index, retention rate, complaint resolution time',
+        owner: 'Customer Service Manager',
+        isoClauses: ['8.2.1', '9.1.2']
+      },
+      {
+        id: 'sup_infrastructure',
+        name: 'Infrastructure & Work Environment',
+        category: 'support',
+        inputs: ['Infrastructure requirements', 'Environmental needs', 'Equipment specifications'],
+        outputs: ['Maintained infrastructure', 'Safe work environment', 'Equipment availability'],
+        risk: 'Infrastructure failure affecting product quality',
+        kpi: 'Equipment uptime, workplace safety incidents, infrastructure reliability',
+        owner: 'Facilities Manager',
+        isoClauses: ['7.1.3', '7.1.4']
+      },
+      {
+        id: 'sup_improvement',
+        name: 'Continual improvement',
+        category: 'support',
+        inputs: ['Performance data', 'Non-conformities', 'Improvement opportunities'],
+        outputs: ['Improvement plans', 'Corrective actions', 'Process enhancements'],
+        risk: 'Stagnation leading to declining performance and competitiveness',
+        kpi: 'Number of improvements implemented, performance trend analysis',
+        owner: 'Quality Manager',
+        isoClauses: ['10.1', '10.2', '10.3']
+      }
+    ];
+    
+    // Merge AI-generated processes with mandatory processes, ensuring mandatory ones are always included
+    let allProcesses = [...mandatoryProcesses];
+    
+    // Add AI-generated processes that are not already covered by mandatory processes
+    if (parsed.processes) {
+      const aiProcesses = parsed.processes.map((p: any, index: number) => ({
+        id: p.id || String(mandatoryProcesses.length + index + 1),
         name: p.name || 'Unnamed Process',
         category: ['core', 'support', 'management'].includes(p.category) ? p.category : 'core',
         inputs: Array.isArray(p.inputs) ? p.inputs.slice(0, 4) : [],
@@ -126,7 +218,20 @@ Examples:
         kpi: p.kpi || 'Process performance metric',
         owner: p.owner || 'Process Owner',
         isoClauses: Array.isArray(p.isoClauses) ? p.isoClauses : ['8.1']
-      })) || [],
+      }));
+      
+      // Filter out AI processes that duplicate mandatory process names
+      const mandatoryNames = mandatoryProcesses.map(p => p.name.toLowerCase());
+      const uniqueAiProcesses = aiProcesses.filter(p => 
+        !mandatoryNames.includes(p.name.toLowerCase())
+      );
+      
+      allProcesses = [...mandatoryProcesses, ...uniqueAiProcesses];
+    }
+    
+    // Validate and format the response
+    const processData = {
+      processes: allProcesses,
       interactions: parsed.interactions?.map((i: any) => ({
         from: i.from || '',
         to: i.to || '',
