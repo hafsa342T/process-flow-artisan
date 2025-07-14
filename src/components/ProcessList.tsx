@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Edit, Trash2, Plus, Save, X } from 'lucide-react';
 import { ProcessData, ProcessMappingData } from './ProcessMappingTool';
 
@@ -17,6 +18,17 @@ interface ProcessListProps {
 export const ProcessList: React.FC<ProcessListProps> = ({ data, onUpdate, readOnly = false }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<ProcessData | null>(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newProcess, setNewProcess] = useState<Partial<ProcessData>>({
+    name: '',
+    category: 'core',
+    inputs: ['Process requirements', 'Resources'],
+    outputs: ['Process deliverables', 'Documentation'],
+    risk: 'Process failure risk',
+    kpi: 'Process performance metric',
+    owner: 'Process Manager',
+    isoClauses: ['4.4', '8.1']
+  });
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -64,6 +76,168 @@ export const ProcessList: React.FC<ProcessListProps> = ({ data, onUpdate, readOn
       processes: updatedProcesses,
       interactions: updatedInteractions
     });
+  };
+
+  const handleAddNew = () => {
+    setIsAddingNew(true);
+  };
+
+  const handleSaveNew = () => {
+    if (!newProcess.name?.trim()) return;
+    
+    const newId = String(data.processes.length + 1);
+    const processToAdd: ProcessData = {
+      id: newId,
+      name: newProcess.name,
+      category: newProcess.category as 'core' | 'support' | 'management',
+      inputs: newProcess.inputs || ['Process requirements', 'Resources'],
+      outputs: newProcess.outputs || ['Process deliverables', 'Documentation'],
+      risk: newProcess.risk || 'Process failure risk',
+      kpi: newProcess.kpi || 'Process performance metric',
+      owner: newProcess.owner || 'Process Manager',
+      isoClauses: newProcess.isoClauses || ['4.4', '8.1']
+    };
+    
+    onUpdate({
+      ...data,
+      processes: [...data.processes, processToAdd]
+    });
+    
+    // Reset form
+    setNewProcess({
+      name: '',
+      category: 'core',
+      inputs: ['Process requirements', 'Resources'],
+      outputs: ['Process deliverables', 'Documentation'],
+      risk: 'Process failure risk',
+      kpi: 'Process performance metric',
+      owner: 'Process Manager',
+      isoClauses: ['4.4', '8.1']
+    });
+    setIsAddingNew(false);
+  };
+
+  const handleCancelNew = () => {
+    setIsAddingNew(false);
+    setNewProcess({
+      name: '',
+      category: 'core',
+      inputs: ['Process requirements', 'Resources'],
+      outputs: ['Process deliverables', 'Documentation'],
+      risk: 'Process failure risk',
+      kpi: 'Process performance metric',
+      owner: 'Process Manager',
+      isoClauses: ['4.4', '8.1']
+    });
+  };
+
+  const renderNewProcessForm = () => {
+    return (
+      <Card className="shadow-lg border-primary/30 bg-gradient-to-br from-primary-light/20 to-primary-light/10">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Add New Process</CardTitle>
+            <div className="flex gap-1">
+              <Button size="sm" onClick={handleSaveNew} className="h-8 w-8 p-0">
+                <Save className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleCancelNew} className="h-8 w-8 p-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium">Process Name</Label>
+              <Input
+                value={newProcess.name || ''}
+                onChange={(e) => setNewProcess({ ...newProcess, name: e.target.value })}
+                placeholder="Enter process name"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="text-sm font-medium">Category</Label>
+              <Select 
+                value={newProcess.category || 'core'} 
+                onValueChange={(value) => setNewProcess({ ...newProcess, category: value as 'core' | 'support' | 'management' })}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="core">Core</SelectItem>
+                  <SelectItem value="support">Support</SelectItem>
+                  <SelectItem value="management">Management</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium">Inputs</Label>
+              <Textarea
+                value={newProcess.inputs?.join('\n') || 'Process requirements\nResources'}
+                onChange={(e) => setNewProcess({ 
+                  ...newProcess, 
+                  inputs: e.target.value.split('\n').filter(i => i.trim()) 
+                })}
+                className="mt-1 min-h-[80px]"
+                placeholder="Enter inputs (one per line)"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-sm font-medium">Outputs</Label>
+              <Textarea
+                value={newProcess.outputs?.join('\n') || 'Process deliverables\nDocumentation'}
+                onChange={(e) => setNewProcess({ 
+                  ...newProcess, 
+                  outputs: e.target.value.split('\n').filter(o => o.trim()) 
+                })}
+                className="mt-1 min-h-[80px]"
+                placeholder="Enter outputs (one per line)"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium">Key Risk</Label>
+            <Input
+              value={newProcess.risk || ''}
+              onChange={(e) => setNewProcess({ ...newProcess, risk: e.target.value })}
+              placeholder="Enter primary risk"
+              className="mt-1"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium">KPI</Label>
+              <Input
+                value={newProcess.kpi || ''}
+                onChange={(e) => setNewProcess({ ...newProcess, kpi: e.target.value })}
+                placeholder="Enter key performance indicator"
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label className="text-sm font-medium">Process Owner</Label>
+              <Input
+                value={newProcess.owner || ''}
+                onChange={(e) => setNewProcess({ ...newProcess, owner: e.target.value })}
+                placeholder="Enter responsible role/person"
+                className="mt-1"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   const renderProcessCard = (process: ProcessData) => {
@@ -223,7 +397,7 @@ export const ProcessList: React.FC<ProcessListProps> = ({ data, onUpdate, readOn
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Process Details</h3>
         {!readOnly && (
-          <Button size="sm" className="gap-2">
+          <Button size="sm" onClick={handleAddNew} className="gap-2">
             <Plus className="h-4 w-4" />
             Add Process
           </Button>
@@ -231,6 +405,7 @@ export const ProcessList: React.FC<ProcessListProps> = ({ data, onUpdate, readOn
       </div>
       
       <div className="grid gap-4">
+        {isAddingNew && renderNewProcessForm()}
         {data.processes.map(renderProcessCard)}
       </div>
     </div>
