@@ -544,7 +544,7 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
             </div>
             <div>
               <h1 className="text-2xl font-bold text-foreground">ISO 9001 Process Mapper</h1>
-              <p className="text-muted-foreground">Smart process mapping and documentation</p>
+              <p className="text-muted-foreground">Making ISO Certification Accessible</p>
             </div>
           </div>
         </div>
