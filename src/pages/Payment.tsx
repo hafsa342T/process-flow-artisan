@@ -148,7 +148,7 @@ const Payment = () => {
             <CardHeader className="text-center pt-8">
               <CardTitle className="text-2xl">Premium Report Package</CardTitle>
               <div className="text-4xl font-bold text-primary">$99</div>
-              <CardDescription>One-time payment • Instant delivery</CardDescription>
+              <CardDescription>One-time payment • Delivery within 48 hours</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
