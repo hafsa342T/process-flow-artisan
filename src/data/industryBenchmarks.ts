@@ -41,16 +41,7 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Document Control",
         "Calibration & Metrology"
       ],
-      management: [
-        "Strategic Planning",
-        "Quality Management System",
-        "Risk Management",
-        "Management Review",
-        "Internal Audit",
-        "Corrective & Preventive Actions",
-        "Continuous Improvement",
-        "Performance Monitoring"
-      ]
+      management: []
     },
     keyInteractions: [
       {
@@ -133,15 +124,7 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Legal & Contracts",
         "Marketing & Sales Support"
       ],
-      management: [
-        "Project Management",
-        "Quality Assurance",
-        "Risk Management",
-        "Performance Management",
-        "Strategic Planning",
-        "Process Improvement",
-        "Management Review"
-      ]
+      management: []
     },
     keyInteractions: [
       {
@@ -211,15 +194,7 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Infection Control",
         "Waste Management"
       ],
-      management: [
-        "Quality Assurance",
-        "Risk Management",
-        "Compliance Management",
-        "Staff Management",
-        "Performance Improvement",
-        "Patient Safety Management",
-        "Emergency Preparedness"
-      ]
+      management: []
     },
     keyInteractions: [
       {
@@ -288,18 +263,7 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Vendor & Supplier Management",
         "Training & Professional Development"
       ],
-      management: [
-        "Strategic Planning",
-        "Quality Management System",
-        "Risk Management",
-        "Performance Management",
-        "Client Portfolio Management",
-        "Internal Audit",
-        "Management Review",
-        "Continuous Improvement",
-        "Business Development Planning",
-        "Resource Planning & Optimization"
-      ]
+      management: []
     },
     keyInteractions: [
       {
@@ -386,14 +350,7 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Security Management",
         "Document Management"
       ],
-      management: [
-        "Risk Management",
-        "Audit & Compliance",
-        "Performance Management",
-        "Strategic Planning",
-        "Business Continuity",
-        "Change Management"
-      ]
+      management: []
     },
     keyInteractions: [
       {
