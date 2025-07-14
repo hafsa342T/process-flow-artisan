@@ -195,6 +195,8 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     
     // Add benchmark processes if available
     if (benchmark) {
+      console.log('Benchmark data:', benchmark.commonProcesses);
+      
       // Add some core processes not mentioned by user
       benchmark.commonProcesses.core.forEach((process: string) => {
         if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
@@ -202,9 +204,11 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
         }
       });
       
-      // Add key support processes
-      allProcesses.push(...benchmark.commonProcesses.support.slice(0, 3));
-      allProcesses.push(...benchmark.commonProcesses.management.slice(0, 2));
+      // Add ALL support and management processes (not just first few)
+      allProcesses.push(...benchmark.commonProcesses.support);
+      allProcesses.push(...benchmark.commonProcesses.management);
+      
+      console.log('All processes after adding benchmark:', allProcesses);
     }
 
     const processes: ProcessData[] = allProcesses.map((name, index) => {
