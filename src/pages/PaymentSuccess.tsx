@@ -23,15 +23,24 @@ const PaymentSuccess = () => {
   const [showDetailsForm, setShowDetailsForm] = useState(false);
   const [detailsSubmitted, setDetailsSubmitted] = useState(false);
   
-  // Get URL parameters - try both session_id and sessionId
-  const email = searchParams.get('email') || '';
-  const industry = searchParams.get('industry') || '';
-  const sessionId = searchParams.get('session_id') || searchParams.get('sessionId') || '';
-  const paymentParam = searchParams.get('payment') || '';
+  // Get URL parameters directly from window.location
+  const urlParams = new URLSearchParams(window.location.search);
+  const email = urlParams.get('email') || searchParams.get('email') || '';
+  const industry = urlParams.get('industry') || searchParams.get('industry') || '';
+  const sessionId = urlParams.get('session_id') || urlParams.get('sessionId') || searchParams.get('session_id') || searchParams.get('sessionId') || '';
+  const paymentParam = urlParams.get('payment') || searchParams.get('payment') || '';
 
   useEffect(() => {
-    // If URL contains payment=success, always show the form regardless
-    if (window.location.search.includes('payment=success')) {
+    // Debug what we're getting
+    console.log('Current URL:', window.location.href);
+    console.log('URL Search:', window.location.search);
+    console.log('Parsed email:', email);
+    console.log('Parsed industry:', industry);
+    console.log('Parsed payment:', paymentParam);
+    
+    // If URL contains payment=success, always show the form
+    if (window.location.search.includes('payment=success') || paymentParam === 'success') {
+      console.log('✅ Payment success detected, showing form');
       setPaymentStatus('confirmed');
       setShowDetailsForm(true);
       setIsProcessing(false);
@@ -40,6 +49,7 @@ const PaymentSuccess = () => {
 
     // Fallback: if we have email and industry, show form
     if (email && industry) {
+      console.log('✅ Email and industry found, showing form');
       setPaymentStatus('confirmed');
       setShowDetailsForm(true);
       setIsProcessing(false);
@@ -47,6 +57,7 @@ const PaymentSuccess = () => {
     }
 
     // Otherwise set error
+    console.log('❌ Setting error status');
     setPaymentStatus('error');
     setIsProcessing(false);
   }, [email, industry]);
