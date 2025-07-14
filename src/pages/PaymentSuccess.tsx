@@ -208,7 +208,14 @@ const PaymentSuccess = () => {
 
           {/* Action Buttons */}
           <div className="flex gap-3">
-            <Button variant="outline" onClick={() => window.open('https://www.qse-academy.com/iso-9001-process-mapping-tool/', '_blank')} className="flex-1 gap-2">
+            <Button 
+              variant="outline" 
+              className="flex-1 gap-2"
+              onClick={(e) => {
+                e.preventDefault();
+                window.open('https://www.qse-academy.com/iso-9001-process-mapping-tool/', '_blank');
+              }}
+            >
               <Home className="h-4 w-4" />
               Create New Mapping
             </Button>
