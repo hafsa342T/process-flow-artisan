@@ -33,14 +33,18 @@ const PaymentSuccess = () => {
     const handlePaymentSuccess = async () => {
       console.log('=== PaymentSuccess Debug ===');
       console.log('URL:', window.location.href);
-      console.log('Email:', email);
-      console.log('Industry:', industry);
-      console.log('SessionId:', sessionId);
-      console.log('Payment param:', paymentParam);
+      console.log('Raw URL params:', window.location.search);
+      console.log('Email from params:', email);
+      console.log('Industry from params:', industry);
+      console.log('SessionId from params:', sessionId);
+      console.log('Payment param from params:', paymentParam);
+      console.log('Email length:', email.length);
+      console.log('Industry length:', industry.length);
+      console.log('Payment param === "success"?', paymentParam === 'success');
       
       // If we have payment=success AND email AND industry, skip edge function
       if (paymentParam === 'success' && email && industry) {
-        console.log('✅ All payment parameters found, proceeding directly to form');
+        console.log('✅ SUCCESS: All payment parameters found, proceeding directly to form');
         setPaymentStatus('confirmed');
         setShowDetailsForm(true);
         setIsProcessing(false);
@@ -49,20 +53,23 @@ const PaymentSuccess = () => {
       
       // Also proceed if we just have email and industry (fallback)
       if (email && industry) {
-        console.log('✅ Email and industry found, proceeding to form');
+        console.log('✅ FALLBACK: Email and industry found, proceeding to form');
         setPaymentStatus('confirmed');
         setShowDetailsForm(true);
         setIsProcessing(false);
         return;
       }
 
+      console.log('❌ Missing required parameters, checking session ID...');
       if (!sessionId) {
+        console.log('❌ No session ID found, setting error status');
         setPaymentStatus('error');
         setIsProcessing(false);
         return;
       }
 
       try {
+        console.log('🔄 Calling edge function for session:', sessionId);
         const { data, error } = await supabase.functions.invoke('handle-payment-success', {
           body: { sessionId }
         });
@@ -71,15 +78,18 @@ const PaymentSuccess = () => {
           throw new Error(error.message);
         }
         
+        console.log('✅ Edge function success');
         setPaymentStatus('confirmed');
         setShowDetailsForm(true);
       } catch (error) {
-        console.error('Error processing payment success:', error);
+        console.error('❌ Error processing payment success:', error);
         // If edge function fails but we have the basic info, still proceed
         if (email && industry) {
+          console.log('✅ Using fallback logic');
           setPaymentStatus('confirmed');
           setShowDetailsForm(true);
         } else {
+          console.log('❌ Setting error status');
           setPaymentStatus('error');
         }
       } finally {
