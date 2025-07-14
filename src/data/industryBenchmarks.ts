@@ -32,19 +32,23 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Customer Service & Support"
       ],
       support: [
+        "Training, Competence & Awareness",
+        "Customer Satisfaction",
+        "Infrastructure & Work Environment",
+        "Continual improvement",
         "Human Resources Management",
         "Information Technology Support",
         "Maintenance & Facilities",
         "Health & Safety Management",
         "Environmental Management",
-        "Training & Development",
         "Document Control",
         "Calibration & Metrology"
       ],
       management: [
+        "Leadership",
+        "Quality Management",
+        "Risk & Opportunity Management",
         "Strategic Planning",
-        "Quality Management System",
-        "Risk Management",
         "Management Review",
         "Internal Audit",
         "Corrective & Preventive Actions",
@@ -125,18 +129,23 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Product Management"
       ],
       support: [
+        "Training, Competence & Awareness",
+        "Customer Satisfaction",
+        "Infrastructure & Work Environment",
+        "Continual improvement",
         "Infrastructure Management",
         "Security & Compliance",
         "Human Resources",
-        "Training & Development",
         "Vendor Management",
         "Legal & Contracts",
         "Marketing & Sales Support"
       ],
       management: [
+        "Leadership",
+        "Quality Management",
+        "Risk & Opportunity Management",
         "Project Management",
         "Quality Assurance",
-        "Risk Management",
         "Performance Management",
         "Strategic Planning",
         "Process Improvement",
@@ -202,6 +211,10 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Follow-up Care"
       ],
       support: [
+        "Training, Competence & Awareness",
+        "Customer Satisfaction",
+        "Infrastructure & Work Environment",
+        "Continual improvement",
         "Medical Records Management",
         "Pharmacy Services",
         "Laboratory Services",
@@ -212,8 +225,10 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Waste Management"
       ],
       management: [
+        "Leadership",
+        "Quality Management",
+        "Risk & Opportunity Management",
         "Quality Assurance",
-        "Risk Management",
         "Compliance Management",
         "Staff Management",
         "Performance Improvement",
@@ -277,6 +292,10 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Client Relationship Management"
       ],
       support: [
+        "Training, Competence & Awareness",
+        "Customer Satisfaction",
+        "Infrastructure & Work Environment",
+        "Continual improvement",
         "Human Resources Management",
         "Information Technology Support",
         "Finance & Accounting",
@@ -285,13 +304,13 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Knowledge Management",
         "Document Management",
         "Facilities Management",
-        "Vendor & Supplier Management",
-        "Training & Professional Development"
+        "Vendor & Supplier Management"
       ],
       management: [
+        "Leadership",
+        "Quality Management",
+        "Risk & Opportunity Management",
         "Strategic Planning",
-        "Quality Management System",
-        "Risk Management",
         "Performance Management",
         "Client Portfolio Management",
         "Internal Audit",
@@ -378,6 +397,10 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Customer Service"
       ],
       support: [
+        "Training, Competence & Awareness",
+        "Customer Satisfaction",
+        "Infrastructure & Work Environment",
+        "Continual improvement",
         "IT Systems Management",
         "Compliance & Regulatory Reporting",
         "Human Resources",
@@ -387,7 +410,9 @@ export const industryBenchmarks: IndustryBenchmark[] = [
         "Document Management"
       ],
       management: [
-        "Risk Management",
+        "Leadership",
+        "Quality Management",
+        "Risk & Opportunity Management",
         "Audit & Compliance",
         "Performance Management",
         "Strategic Planning",
