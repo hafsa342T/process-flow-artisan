@@ -323,10 +323,134 @@ const handler = async (req: Request): Promise<Response> => {
       `;
     };
 
-    // Prepare client email attachments (only for premium reports)
+    // Generate basic HTML report for unpaid clients
+    const generateBasicReport = (processes: any[], industry: string) => {
+      const getCategoryColor = (category: string) => {
+        switch (category) {
+          case 'core': return { bg: '#3b82f6', border: '#2563eb', name: 'Core Process', light: '#dbeafe' };
+          case 'support': return { bg: '#10b981', border: '#059669', name: 'Support Process', light: '#d1fae5' };
+          case 'management': return { bg: '#8b5cf6', border: '#7c3aed', name: 'Management Process', light: '#e9d5ff' };
+          default: return { bg: '#6b7280', border: '#4b5563', name: 'Process', light: '#f3f4f6' };
+        }
+      };
+
+      const processColumns = {
+        management: processes.filter(p => p.category === 'management'),
+        core: processes.filter(p => p.category === 'core'),
+        support: processes.filter(p => p.category === 'support')
+      };
+
+      return `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Basic ISO 9001 Process Report - ${industry}</title>
+        </head>
+        <body style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f8fafc; margin: 0; padding: 0;">
+          <div style="max-width: 800px; margin: 0 auto; background: white; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+            
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #0066cc 0%, #004499 100%); color: white; padding: 30px; text-align: center;">
+              <h1 style="margin: 0; font-size: 28px; font-weight: 600;">Basic ISO 9001 Process Report</h1>
+              <p style="margin: 10px 0 5px 0; font-size: 18px; opacity: 0.9;">${industry} Industry Overview</p>
+              <p style="margin: 5px 0 0 0; font-size: 14px; opacity: 0.8;">Generated: ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <!-- Process Count Summary -->
+            <div style="padding: 30px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+              <h2 style="color: #0066cc; margin: 0 0 20px 0; font-size: 22px;">Process Overview</h2>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6;">
+                  <div style="font-size: 28px; font-weight: bold; color: #3b82f6; margin-bottom: 5px;">${processes.length}</div>
+                  <div style="font-size: 14px; color: #6b7280; font-weight: 500;">Total Processes</div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #3b82f6;">
+                  <div style="font-size: 28px; font-weight: bold; color: #3b82f6; margin-bottom: 5px;">${processColumns.core.length}</div>
+                  <div style="font-size: 14px; color: #6b7280; font-weight: 500;">Core Processes</div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #10b981;">
+                  <div style="font-size: 28px; font-weight: bold; color: #10b981; margin-bottom: 5px;">${processColumns.support.length}</div>
+                  <div style="font-size: 14px; color: #6b7280; font-weight: 500;">Support Processes</div>
+                </div>
+                <div style="background: white; padding: 20px; border-radius: 8px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-left: 4px solid #8b5cf6;">
+                  <div style="font-size: 28px; font-weight: bold; color: #8b5cf6; margin-bottom: 5px;">${processColumns.management.length}</div>
+                  <div style="font-size: 14px; color: #6b7280; font-weight: 500;">Management Processes</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Process Cards -->
+            <div style="padding: 30px;">
+              <h2 style="color: #0066cc; margin: 0 0 20px 0; font-size: 22px;">Process Details</h2>
+              ${processes.map(process => {
+                const colors = getCategoryColor(process.category);
+                return `
+                  <div style="background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; overflow: hidden; border-left: 4px solid ${colors.bg};">
+                    <div style="background: ${colors.light}; padding: 15px; border-bottom: 1px solid #e2e8f0;">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: #374151;">${process.name}</h4>
+                        <span style="background: ${colors.bg}; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500;">
+                          ${colors.name}
+                        </span>
+                      </div>
+                    </div>
+                    <div style="padding: 20px;">
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                        <div>
+                          <h5 style="color: #374151; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Inputs</h5>
+                          <ul style="margin: 0; padding-left: 15px; color: #6b7280; font-size: 13px;">
+                            ${process.inputs.map((input: string) => `<li style="margin-bottom: 4px;">${input}</li>`).join('')}
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 style="color: #374151; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Outputs</h5>
+                          <ul style="margin: 0; padding-left: 15px; color: #6b7280; font-size: 13px;">
+                            ${process.outputs.map((output: string) => `<li style="margin-bottom: 4px;">${output}</li>`).join('')}
+                          </ul>
+                        </div>
+                      </div>
+                      <div style="background: #f8fafc; padding: 15px; border-radius: 6px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                          <div>
+                            <strong style="color: #374151; font-size: 13px; display: block; margin-bottom: 5px;">Process Owner</strong>
+                            <span style="color: #6b7280; font-size: 13px;">${process.owner}</span>
+                          </div>
+                          <div>
+                            <strong style="color: #374151; font-size: 13px; display: block; margin-bottom: 5px;">Key Risk</strong>
+                            <span style="color: #6b7280; font-size: 13px;">${process.risk}</span>
+                          </div>
+                        </div>
+                        <div style="margin-top: 10px;">
+                          <strong style="color: #374151; font-size: 13px; display: block; margin-bottom: 5px;">Key Performance Indicator</strong>
+                          <span style="color: #6b7280; font-size: 13px;">${process.kpi}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+            
+            <!-- Footer -->
+            <div style="background: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e2e8f0;">
+              <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                <strong>QSE Academy</strong> | Making ISO Certification Accessible<br>
+                This basic report was generated using our ISO 9001 Process Mapping Tool<br>
+                For premium reports and implementation support, contact: <a href="mailto:support@qse-academy.com" style="color: #0066cc;">support@qse-academy.com</a>
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+    };
+
+    // Prepare client email attachments
     const clientAttachments = [];
     if (pdfReport && !isBasicReport) {
-      // Extract the base64 content (remove data URL prefix if present)
+      // Premium clients get PDF attachment
       const base64Content = pdfReport.includes(',') ? pdfReport.split(',')[1] : pdfReport;
       
       clientAttachments.push({
@@ -334,8 +458,17 @@ const handler = async (req: Request): Promise<Response> => {
         content: base64Content,
         type: 'application/pdf',
       });
+    } else if (isBasicReport && processes.length > 0) {
+      // Basic clients get basic HTML report attachment
+      const basicReport = generateBasicReport(processes, industry);
+      const base64HTML = btoa(unescape(encodeURIComponent(basicReport)));
+      
+      clientAttachments.push({
+        filename: `${industry.replace(/\s+/g, '_')}_Basic_Process_Report.html`,
+        content: base64HTML,
+        type: 'text/html',
+      });
     }
-    // NOTE: Basic reports do NOT get comprehensive report attachment
 
     const subject = isBasicReport 
       ? `Your Process Report - ${industry} (Basic Overview)`
