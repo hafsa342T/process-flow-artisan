@@ -29,7 +29,14 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     const handlePaymentSuccess = async () => {
+      console.log('PaymentSuccess useEffect triggered');
+      console.log('Current URL params:', window.location.search);
+      console.log('Session ID from params:', sessionId);
+      console.log('Email from params:', email);
+      console.log('Industry from params:', industry);
+      
       if (!sessionId) {
+        console.error('No session ID found in URL parameters');
         setPaymentStatus('error');
         setIsProcessing(false);
         return;
@@ -42,7 +49,10 @@ const PaymentSuccess = () => {
           body: { sessionId }
         });
         
+        console.log('Supabase function response:', { data, error });
+        
         if (error) {
+          console.error('Supabase function error:', error);
           throw new Error(error.message);
         }
         
@@ -61,6 +71,7 @@ const PaymentSuccess = () => {
     if (sessionId) {
       handlePaymentSuccess();
     } else {
+      console.log('No sessionId, setting processing to false');
       setIsProcessing(false);
     }
   }, [sessionId]);
