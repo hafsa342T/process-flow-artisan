@@ -62,30 +62,41 @@ export const ProcessMappingTool: React.FC = () => {
     setIsGenerating(true);
     
     try {
-      const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
-      
-      // Always try benchmark/industry-specific generation first for speed
-      const benchmark = getIndustryBenchmark(industry);
-      let processData: ProcessMappingData;
-      
-      if (benchmark) {
-        // Use benchmark data for known industries (fast)
-        console.log('Using benchmark data for known industry:', industry);
-        processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
-      } else {
-        // Use industry-specific processes (fast fallback)
-        console.log('Generating industry-specific processes for:', industry);
-        processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
-      }
+      // First try AI generation for comprehensive process mapping
+      console.log('Generating comprehensive AI process map for:', industry);
+      const processData = await generateWithAI(industry, coreProcesses);
       
       setGeneratedData(processData);
       setCurrentStep('generated');
     } catch (error) {
-      console.error('Generation error:', error);
-      // Final fallback
-      const processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
-      setGeneratedData(processData);
-      setCurrentStep('generated');
+      console.error('AI generation error, falling back to local generation:', error);
+      
+      try {
+        const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
+        
+        // Try benchmark/industry-specific generation as fallback
+        const benchmark = getIndustryBenchmark(industry);
+        let processData: ProcessMappingData;
+        
+        if (benchmark) {
+          // Use benchmark data for known industries
+          console.log('Using benchmark data for known industry:', industry);
+          processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
+        } else {
+          // Use industry-specific processes (final fallback)
+          console.log('Generating industry-specific processes for:', industry);
+          processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
+        }
+        
+        setGeneratedData(processData);
+        setCurrentStep('generated');
+      } catch (fallbackError) {
+        console.error('Fallback generation error:', fallbackError);
+        // Final fallback
+        const processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
+        setGeneratedData(processData);
+        setCurrentStep('generated');
+      }
     } finally {
       setIsGenerating(false);
     }
@@ -100,7 +111,8 @@ export const ProcessMappingTool: React.FC = () => {
         body: { 
           industry, 
           processes,
-          prompt: buildAIPrompt(industry, processes)
+          prompt: buildAIPrompt(industry, processes),
+          onlyBenchmarks: false
         }
       });
 
