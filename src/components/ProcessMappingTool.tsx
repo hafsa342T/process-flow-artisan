@@ -62,41 +62,29 @@ export const ProcessMappingTool: React.FC = () => {
     setIsGenerating(true);
     
     try {
-      // Your API key would be stored securely in Supabase Edge Function
-      const { aiService } = await import('@/services/aiService');
       const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
       
+      // Always try benchmark/industry-specific generation first for speed
+      const benchmark = getIndustryBenchmark(industry);
       let processData: ProcessMappingData;
       
-      // Check if we have benchmark data for this industry
-      const benchmark = getIndustryBenchmark(industry);
-      
       if (benchmark) {
-        // Use benchmark data for known industries
+        // Use benchmark data for known industries (fast)
         console.log('Using benchmark data for known industry:', industry);
         processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
       } else {
-        // Use AI generation for unknown/rare industries
-        console.log('Unknown industry - attempting AI generation:', industry);
-        try {
-          processData = await generateWithAI(industry, coreProcesses);
-          console.log('AI generation successful');
-        } catch (error) {
-          console.error('AI generation failed:', error);
-          // Create industry-specific processes manually for now
-          processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
-        }
+        // Use industry-specific processes (fast fallback)
+        console.log('Generating industry-specific processes for:', industry);
+        processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
       }
       
       setGeneratedData(processData);
       setCurrentStep('generated');
     } catch (error) {
       console.error('Generation error:', error);
-      // Final fallback to benchmark data
-      const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
-      const benchmark = getIndustryBenchmark(industry);
-      const fallbackData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
-      setGeneratedData(fallbackData);
+      // Final fallback
+      const processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
+      setGeneratedData(processData);
       setCurrentStep('generated');
     } finally {
       setIsGenerating(false);
@@ -129,22 +117,22 @@ export const ProcessMappingTool: React.FC = () => {
 
   const buildAIPrompt = (industry: string, userProcesses: string): string => {
     return `
-Generate a comprehensive ISO 9001:2015 process map for the ${industry} industry.
+Generate a comprehensive ISO 9001:2015 process map for the ${industry} industry according to ISO 9001:2015 requirements.
 
 User mentioned these processes: ${userProcesses}
 
-CRITICAL: Generate industry-specific processes relevant to ${industry}. For example:
+CRITICAL: Generate industry-specific processes relevant to ${industry} following ISO 9001:2015 standards. For example:
 - If dental clinic: include patient registration, appointment scheduling, clinical examinations, treatment planning, dental procedures, sterilization, billing, patient records management
 - If restaurant: include menu planning, inventory management, food preparation, order taking, cooking, serving, cleaning, quality control
 - If law firm: include client intake, case management, legal research, document preparation, court representation, billing
 
 Requirements:
-1. Include realistic ${industry} industry processes (core, support, management)
+1. Include realistic ${industry} industry processes (core, support, management) according to ISO 9001:2015
 2. Add detailed process interactions showing how processes feed into each other
-3. Categorize all processes correctly (core/support/management)
+3. Categorize all processes correctly (core/support/management) per ISO 9001:2015
 4. Include realistic inputs, outputs, risks, KPIs, and responsible roles for ${industry}
-5. Map to relevant ISO 9001:2015 clauses
-6. Show process flow relationships with descriptions
+5. Map to relevant ISO 9001:2015 clauses (4.4, 8.1, 8.2, 8.3, etc.)
+6. Show process flow relationships with descriptions per ISO 9001:2015 process approach
 
 Return ONLY valid JSON in this exact format:
 {
@@ -193,18 +181,28 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     const userProcessList = userProcesses.split('\n').filter(p => p.trim());
     const allProcesses = [...userProcessList];
     
-    // Add benchmark processes if available
+    // Add benchmark processes if available according to ISO 9001:2015
     if (benchmark) {
-      // Add some core processes not mentioned by user
+      // Add all core processes not mentioned by user
       benchmark.commonProcesses.core.forEach((process: string) => {
         if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
           allProcesses.push(process);
         }
       });
       
-      // Add key support processes
-      allProcesses.push(...benchmark.commonProcesses.support.slice(0, 3));
-      allProcesses.push(...benchmark.commonProcesses.management.slice(0, 2));
+      // Add all support processes for comprehensive ISO 9001:2015 coverage
+      benchmark.commonProcesses.support.forEach((process: string) => {
+        if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
+          allProcesses.push(process);
+        }
+      });
+      
+      // Add all management processes for ISO 9001:2015 compliance
+      benchmark.commonProcesses.management.forEach((process: string) => {
+        if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
+          allProcesses.push(process);
+        }
+      });
     }
 
     const processes: ProcessData[] = allProcesses.map((name, index) => {
@@ -221,7 +219,7 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
         risk: benchmark?.industryRisks[index % (benchmark.industryRisks.length || 1)] || 'Process failure risk',
         kpi: benchmark?.commonKPIs[index % (benchmark.commonKPIs.length || 1)] || 'Process performance metric',
         owner: `${name} Manager`,
-        isoClauses: ['8.1', '8.2', '9.1']
+        isoClauses: ['4.4', '8.1', '8.2', '9.1']
       };
     });
 
@@ -231,7 +229,7 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
         interactions.push({
           from: processes[i].name,
           to: processes[i + 1].name,
-          description: 'Process output feeds next process'
+          description: 'Process output feeds next process per ISO 9001:2015'
         });
       }
     }
