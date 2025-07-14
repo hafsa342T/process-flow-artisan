@@ -196,25 +196,50 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
   };
   const generateEnhancedBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
     const userProcessList = userProcesses.split('\n').filter(p => p.trim());
+    
+    // MANDATORY ISO 9001:2015 processes - ALWAYS include these
+    const mandatoryManagement = [
+      'Leadership',
+      'Quality Management',
+      'Risk & Opportunity Management'
+    ];
+    
+    const mandatorySupport = [
+      'Training, Competence & Awareness',
+      'Customer Satisfaction', 
+      'Infrastructure & Work Environment',
+      'Continual Improvement'
+    ];
+    
     const allProcesses = [...userProcessList];
     
-    // Add benchmark processes if available according to ISO 9001:2015
+    // Add mandatory processes first
+    mandatoryManagement.forEach(process => {
+      if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0].toLowerCase()))) {
+        allProcesses.push(process);
+      }
+    });
+    
+    mandatorySupport.forEach(process => {
+      if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0].toLowerCase()))) {
+        allProcesses.push(process);
+      }
+    });
+    
+    // Add benchmark processes if available
     if (benchmark) {
-      // Add all core processes not mentioned by user
       benchmark.commonProcesses.core.forEach((process: string) => {
         if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
           allProcesses.push(process);
         }
       });
       
-      // Add all support processes for comprehensive ISO 9001:2015 coverage
       benchmark.commonProcesses.support.forEach((process: string) => {
         if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
           allProcesses.push(process);
         }
       });
       
-      // Add all management processes for ISO 9001:2015 compliance
       benchmark.commonProcesses.management.forEach((process: string) => {
         if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0]))) {
           allProcesses.push(process);
@@ -223,9 +248,20 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
     }
 
     const processes: ProcessData[] = allProcesses.map((name, index) => {
-      const category = benchmark?.commonProcesses.core.includes(name) ? 'core' :
-                     benchmark?.commonProcesses.support.includes(name) ? 'support' : 
-                     benchmark?.commonProcesses.management.includes(name) ? 'management' : 'core';
+      let category: 'core' | 'support' | 'management' = 'core';
+      
+      // Categorize mandatory processes correctly
+      if (mandatoryManagement.includes(name)) {
+        category = 'management';
+      } else if (mandatorySupport.includes(name)) {
+        category = 'support';
+      } else if (benchmark?.commonProcesses.core.includes(name)) {
+        category = 'core';
+      } else if (benchmark?.commonProcesses.support.includes(name)) {
+        category = 'support';
+      } else if (benchmark?.commonProcesses.management.includes(name)) {
+        category = 'management';
+      }
       
       return {
         id: String(index + 1),
@@ -258,6 +294,20 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
   const generateIndustrySpecificProcessMap = (industry: string, userProcesses: string): ProcessMappingData => {
     const userProcessList = userProcesses.split('\n').filter(p => p.trim());
     const industryLower = industry.toLowerCase();
+    
+    // MANDATORY ISO 9001:2015 processes - ALWAYS include these
+    const mandatoryManagement = [
+      'Leadership',
+      'Quality Management',
+      'Risk & Opportunity Management'
+    ];
+    
+    const mandatorySupport = [
+      'Training, Competence & Awareness',
+      'Customer Satisfaction', 
+      'Infrastructure & Work Environment',
+      'Continual Improvement'
+    ];
     
     // Define industry-specific processes
     let industryProcesses: string[] = [];
@@ -317,14 +367,41 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
       ];
     }
     
-    // Combine user processes with industry-specific ones
-    const allProcesses = [...userProcessList, ...industryProcesses.filter(ip => 
-      !userProcessList.some(up => up.toLowerCase().includes(ip.toLowerCase().split(' ')[0].toLowerCase()))
-    )];
+    // Start with user processes
+    const allProcesses = [...userProcessList];
+    
+    // Add mandatory processes first
+    mandatoryManagement.forEach(process => {
+      if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0].toLowerCase()))) {
+        allProcesses.push(process);
+      }
+    });
+    
+    mandatorySupport.forEach(process => {
+      if (!allProcesses.some(up => up.toLowerCase().includes(process.toLowerCase().split(' ')[0].toLowerCase()))) {
+        allProcesses.push(process);
+      }
+    });
+    
+    // Add industry-specific processes
+    industryProcesses.forEach(ip => {
+      if (!allProcesses.some(up => up.toLowerCase().includes(ip.toLowerCase().split(' ')[0].toLowerCase()))) {
+        allProcesses.push(ip);
+      }
+    });
 
     const processes: ProcessData[] = allProcesses.map((name, index) => {
-      const isCore = index < userProcessList.length || industryProcesses.slice(0, 5).includes(name);
-      const category = isCore ? 'core' : (index % 3 === 0 ? 'support' : 'management');
+      let category: 'core' | 'support' | 'management' = 'core';
+      
+      // Categorize mandatory processes correctly
+      if (mandatoryManagement.includes(name)) {
+        category = 'management';
+      } else if (mandatorySupport.includes(name)) {
+        category = 'support';
+      } else {
+        // Industry processes are typically core
+        category = industryProcesses.includes(name) ? 'core' : (index % 3 === 0 ? 'support' : 'management');
+      }
       
       return {
         id: String(index + 1),
@@ -335,7 +412,7 @@ Focus on ${industry} industry best practices and current ISO 9001:2015 requireme
         risk: `${name} failure or delays`,
         kpi: `${name} efficiency and quality metrics`,
         owner: `${name.split(' ')[0]} Manager`,
-        isoClauses: ['8.1', '8.2', '9.1']
+        isoClauses: ['4.4', '8.1', '8.2', '9.1']
       };
     });
 
