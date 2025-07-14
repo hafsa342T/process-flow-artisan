@@ -115,7 +115,9 @@ export const ClientDetailsForm: React.FC<ClientDetailsFormProps> = ({
         throw new Error(error.message);
       }
 
-      toast.success('Details submitted successfully! Your consultant will start working on your report.');
+      toast.success('Details submitted successfully! Your consultant will start working on your report.', {
+        duration: 8000, // Show for 8 seconds
+      });
       onSubmitSuccess();
     } catch (error) {
       console.error('Error submitting client details:', error);
