@@ -49,7 +49,7 @@ CRITICAL REQUIREMENT: The following ISO 9001 processes are MANDATORY and MUST be
 
 Add industry-specific core processes alongside these mandatory ones. Focus on realistic process interactions and flows.`;
       userPrompt = prompt;
-      maxTokens = 4000;
+      maxTokens = 2000; // Reduced token count for faster processing
     }
 
     // Use OpenAI API for generating industry-specific processes
@@ -60,7 +60,7 @@ Add industry-specific core processes alongside these mandatory ones. Focus on re
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o-mini', // Use faster model
         messages: [
           {
             role: 'system',
@@ -71,8 +71,9 @@ Add industry-specific core processes alongside these mandatory ones. Focus on re
             content: userPrompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: maxTokens
+        temperature: 0.3, // Lower temperature for faster, more consistent responses
+        max_tokens: maxTokens,
+        stream: false // Ensure no streaming for predictable response times
       }),
     })
 

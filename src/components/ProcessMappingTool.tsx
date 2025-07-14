@@ -60,16 +60,23 @@ export const ProcessMappingTool: React.FC = () => {
     if (!industry.trim() || !coreProcesses.trim()) return;
     
     setIsGenerating(true);
+    toast('Generating AI-powered process map...', { duration: 1000 });
     
     try {
-      // First try AI generation for comprehensive process mapping
-      console.log('Generating comprehensive AI process map for:', industry);
-      const processData = await generateWithAI(industry, coreProcesses);
+      // Add timeout to AI generation to prevent hanging
+      const processData = await Promise.race([
+        generateWithAI(industry, coreProcesses),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('AI generation timeout')), 30000) // 30 second timeout
+        )
+      ]);
       
       setGeneratedData(processData);
       setCurrentStep('generated');
+      toast('Process map generated successfully!');
     } catch (error) {
-      console.error('AI generation error, falling back to local generation:', error);
+      console.error('AI generation error, using fallback:', error);
+      toast('Using industry benchmark data...', { duration: 1000 });
       
       try {
         const { getIndustryBenchmark } = await import('@/data/industryBenchmarks');
@@ -80,22 +87,22 @@ export const ProcessMappingTool: React.FC = () => {
         
         if (benchmark) {
           // Use benchmark data for known industries
-          console.log('Using benchmark data for known industry:', industry);
           processData = generateEnhancedBenchmarkProcessMap(industry, coreProcesses, benchmark);
         } else {
           // Use industry-specific processes (final fallback)
-          console.log('Generating industry-specific processes for:', industry);
           processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
         }
         
         setGeneratedData(processData);
         setCurrentStep('generated');
+        toast('Process map generated using industry standards!');
       } catch (fallbackError) {
         console.error('Fallback generation error:', fallbackError);
         // Final fallback
         const processData = generateIndustrySpecificProcessMap(industry, coreProcesses);
         setGeneratedData(processData);
         setCurrentStep('generated');
+        toast('Process map generated successfully!');
       }
     } finally {
       setIsGenerating(false);
@@ -129,66 +136,34 @@ export const ProcessMappingTool: React.FC = () => {
 
   const buildAIPrompt = (industry: string, userProcesses: string): string => {
     return `
-Generate a comprehensive ISO 9001:2015 process map for the ${industry} industry according to ISO 9001:2015 requirements.
+Generate ISO 9001:2015 process map for ${industry} industry.
 
-User mentioned these processes: ${userProcesses}
+User processes: ${userProcesses}
 
-CRITICAL: Generate industry-specific processes relevant to ${industry} following ISO 9001:2015 standards. For example:
-- If dental clinic: include patient registration, appointment scheduling, clinical examinations, treatment planning, dental procedures, sterilization, billing, patient records management
-- If restaurant: include menu planning, inventory management, food preparation, order taking, cooking, serving, cleaning, quality control
-- If law firm: include client intake, case management, legal research, document preparation, court representation, billing
-
-Requirements:
-1. Focus on user-mentioned processes and relevant industry processes
-2. Include realistic ${industry} industry core processes
-3. Add supporting management and support processes as needed for ${industry}
-4. Add detailed process interactions showing how processes feed into each other
-5. Categorize all processes correctly (core/support/management) per ISO 9001:2015
-6. Include realistic inputs, outputs, risks, KPIs, and responsible roles for ${industry}
-7. Map to relevant ISO 9001:2015 clauses (4.4, 8.1, 8.2, 8.3, etc.)
-8. Show process flow relationships with descriptions per ISO 9001:2015 process approach
-
-Return ONLY valid JSON in this exact format:
+Return only core business processes for ${industry} in this JSON format:
 {
   "processes": [
     {
-      "id": "unique_id",
       "name": "Process Name",
-      "category": "core|support|management",
-      "inputs": ["input1", "input2", "input3"],
-      "outputs": ["output1", "output2", "output3"],
-      "risk": "Primary risk description",
-      "kpi": "Key performance indicator with specific metric",
-      "owner": "Responsible role/title",
-      "isoClauses": ["clause1", "clause2"]
+      "category": "core",
+      "inputs": ["input1", "input2"],
+      "outputs": ["output1", "output2"],
+      "risk": "Main risk",
+      "kpi": "Key metric",
+      "owner": "Role responsible",
+      "isoClauses": ["8.1"]
     }
   ],
   "interactions": [
     {
-      "from": "Source Process Name",
-      "to": "Target Process Name", 
-      "description": "What flows between processes"
+      "from": "Process A",
+      "to": "Process B", 
+      "description": "What flows"
     }
-  ],
-  "processFlow": {
-    "primaryFlow": ["process1", "process2", "process3"],
-    "supportingFlows": [
-      {
-        "name": "Support Flow Name",
-        "processes": ["support1", "support2"]
-      }
-    ],
-    "feedbackLoops": [
-      {
-        "from": "end_process",
-        "to": "start_process",
-        "description": "Improvement feedback"
-      }
-    ]
-  }
+  ]
 }
 
-Focus on ${industry} industry best practices and current ISO 9001:2015 requirements based on user input.
+Focus on ${industry} industry best practices. Maximum 10 core processes.
 `;
   };
   const generateEnhancedBenchmarkProcessMap = (industry: string, userProcesses: string, benchmark: any): ProcessMappingData => {
