@@ -246,33 +246,61 @@ export const ProcessInput: React.FC<ProcessInputProps> = ({
               {benchmark && (
                 <div className="space-y-4 pt-4 border-t border-muted">
                   <div>
-                    <h4 className="font-medium text-xs mb-2 text-process-support uppercase tracking-wide">Mandatory Support Processes</h4>
-                    <div className="flex flex-wrap gap-1">
+                    <h4 className="font-medium text-sm mb-3 text-process-support">MANDATORY SUPPORT PROCESSES</h4>
+                    <div className="grid gap-2 max-h-32 overflow-y-auto">
                       {benchmark.commonProcesses.support.map((process, idx) => (
-                        <Badge 
-                          key={idx} 
-                          variant="outline" 
-                          className="text-xs h-6 bg-process-support/10 text-process-support border-process-support/30 hover:bg-process-support/20 cursor-pointer transition-colors"
-                          onClick={() => handleAddAiSuggestion(process)}
-                        >
-                          {process}
-                        </Badge>
+                        <div key={idx} className="flex items-center justify-between p-2 bg-card rounded border border-process-support/20">
+                          <span className="text-sm text-process-support">{process}</span>
+                          {selectedBenchmarkProcesses.includes(process) ? (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleRemoveAiSuggestion(process)}
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleAddAiSuggestion(process)}
+                              className="h-6 w-6 p-0 text-process-support hover:text-process-support"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>
                   
                   <div>
-                    <h4 className="font-medium text-xs mb-2 text-process-management uppercase tracking-wide">Mandatory Management Processes</h4>
-                    <div className="flex flex-wrap gap-1">
+                    <h4 className="font-medium text-sm mb-3 text-process-management">MANDATORY MANAGEMENT PROCESSES</h4>
+                    <div className="grid gap-2 max-h-32 overflow-y-auto">
                       {benchmark.commonProcesses.management.map((process, idx) => (
-                        <Badge 
-                          key={idx} 
-                          variant="outline" 
-                          className="text-xs h-6 bg-process-management/10 text-process-management border-process-management/30 hover:bg-process-management/20 cursor-pointer transition-colors"
-                          onClick={() => handleAddAiSuggestion(process)}
-                        >
-                          {process}
-                        </Badge>
+                        <div key={idx} className="flex items-center justify-between p-2 bg-card rounded border border-process-management/20">
+                          <span className="text-sm text-process-management">{process}</span>
+                          {selectedBenchmarkProcesses.includes(process) ? (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleRemoveAiSuggestion(process)}
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleAddAiSuggestion(process)}
+                              className="h-6 w-6 p-0 text-process-management hover:text-process-management"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
                       ))}
                     </div>
                   </div>
