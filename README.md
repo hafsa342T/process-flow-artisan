@@ -1,4 +1,4 @@
-# ISO 9001 Process Mapping Tool – Free Generator
+# ISO 9001 Process Mapping Tool – Generator
 
 This repository introduces a free ISO 9001:2015 process mapping tool developed by QSE Academy. It enables quality managers, consultants, and auditors to instantly generate a complete ISO-aligned process map, including key implementation data and downloadable reports.
 
