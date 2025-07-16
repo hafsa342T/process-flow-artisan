@@ -48,3 +48,4 @@ Learn more here:
 ## Disclaimer
 
 This tool provides general support based on ISO 9001:2015 structure. Output is not tailored to specific business contexts and should be adapted accordingly. QSE Academy is not a certification body.
+[![License: CC BY-NC-ND 4.0](https://img.shields.io/badge/License-CC%20BY--NC--ND%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
