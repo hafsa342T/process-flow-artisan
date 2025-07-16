@@ -1,73 +1,50 @@
-# Welcome to your Lovable project
+# ISO 9001 Process Mapping Tool – Free Generator
 
-## Project info
+This repository introduces a free ISO 9001:2015 process mapping tool developed by QSE Academy. It enables quality managers, consultants, and auditors to instantly generate a complete ISO-aligned process map, including key implementation data and downloadable reports.
 
-**URL**: https://lovable.dev/projects/48bb5cf8-a037-4b0d-8d35-a65da48f0113
+The tool is designed to save hours of manual documentation work and support both new implementations and system reviews.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- Covers all ISO 9001:2015 processes, aligned with Annex SL
+- Automatically assigns:
+  - Process objectives
+  - Performance indicators (KPIs)
+  - Key risks and mitigation actions
+  - Responsible roles and departments
+- Maps process interrelationships visually and structurally
+- Generates a downloadable report for implementation or audit readiness
 
-**Use Lovable**
+## Who Should Use This
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/48bb5cf8-a037-4b0d-8d35-a65da48f0113) and start prompting.
+This tool is ideal for:
+- QHSE Managers
+- ISO Consultants
+- Internal and Lead Auditors
+- Trainers and Educators
+- Businesses preparing for ISO 9001 certification
 
-Changes made via Lovable will be committed automatically to this repo.
+## Access the Free Tool
 
-**Use your preferred IDE**
+You can access the ISO 9001 process mapping tool here:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+[Access the ISO 9001 Process Mapping Tool](https://www.qse-academy.com/iso-9001-process-mapping-tool/)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+No registration is required. All results are generated instantly.
 
-Follow these steps:
+## Full ISO 9001 Template Pack
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+For full implementation, QSE Academy offers an ISO 9001:2015 documentation kit that includes:
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- Editable procedures and forms
+- Process interaction diagrams
+- Risk assessment tools
+- Internal audit templates
 
-# Step 3: Install the necessary dependencies.
-npm i
+Learn more here:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+[ISO 9001:2015 Documentation Kit](https://www.qse-academy.com/iso9001version2015/)
 
-**Edit a file directly in GitHub**
+## Disclaimer
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/48bb5cf8-a037-4b0d-8d35-a65da48f0113) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This tool provides general support based on ISO 9001:2015 structure. Output is not tailored to specific business contexts and should be adapted accordingly. QSE Academy is not a certification body.
