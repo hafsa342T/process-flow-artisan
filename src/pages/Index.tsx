@@ -45,14 +45,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* QSE Academy Header */}
-      <header className="py-4 text-center">
-        <h1 className="text-2xl font-bold text-primary">QSE Academy</h1>
-      </header>
-
       {/* Hero Section */}
       <section className="py-16 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
         <div className="max-w-4xl mx-auto px-4 text-center">
+          <div className="text-2xl font-bold text-primary mb-4">QSE Academy</div>
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
             ISO 9001 Process Mapping Tool
           </h1>
