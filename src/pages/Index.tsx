@@ -278,11 +278,18 @@ const Index = () => {
             </p>
             <Button 
               variant="outline"
-              onClick={() => setShowTool(true)}
-              className="inline-flex items-center gap-2"
+              asChild
             >
-              <BookOpen className="w-4 h-4" />
-              Start Process Mapping
+              <a 
+                href="https://www.qse-academy.com/iso9001version2015/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2"
+              >
+                <BookOpen className="w-4 h-4" />
+                View Documentation Kit
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </Button>
           </div>
         </div>
