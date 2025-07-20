@@ -277,7 +277,7 @@ const Index = () => {
               and ensures full compliance with international quality standards.
             </p>
             <Button 
-              size="lg"
+              variant="outline"
               onClick={() => setShowTool(true)}
               className="inline-flex items-center gap-2"
             >
@@ -291,24 +291,18 @@ const Index = () => {
       {/* Final CTA */}
       <section className="py-16 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">Ready to Transform Your Quality Management?</h2>
+          <h2 className="text-3xl font-bold mb-6">Ready to Create Your Process Map?</h2>
           <p className="text-xl mb-8 text-primary-foreground/90">
-            Join thousands of quality professionals who trust our comprehensive audit and assessment tools.
+            Generate professional ISO 9001:2015 compliant process maps in minutes. Start your quality management journey today.
           </p>
           <Button 
             variant="secondary" 
             size="lg" 
-            asChild
+            onClick={() => setShowTool(true)}
+            className="inline-flex items-center gap-2"
           >
-            <a 
-              href="https://www.qse-academy.com/audit-tool/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2"
-            >
-              <Award className="w-5 h-5" />
-              Explore All QSE Tools
-            </a>
+            <FileText className="w-5 h-5" />
+            Start Process Mapping Tool
           </Button>
         </div>
       </section>
