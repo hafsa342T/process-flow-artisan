@@ -48,7 +48,7 @@ const Index = () => {
       {/* Hero Section */}
       <section className="py-16 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <div className="text-2xl font-bold text-primary mb-4">QSE Academy</div>
+          <div className="text-2xl font-bold text-primary mb-8">QSE Academy</div>
           <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
             ISO 9001 Process Mapping Tool
           </h1>
