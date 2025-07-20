@@ -269,23 +269,20 @@ const Index = () => {
       {/* Professional Development */}
       <section className="py-6">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-12">Professional Development</h2>
+          <h2 className="text-3xl font-bold mb-12">Complete Documentation Kit</h2>
           <div className="max-w-2xl mx-auto">
             <p className="text-muted-foreground mb-6 text-justify">
-              Enhance your quality management expertise with comprehensive ISO 9001:2015 training and certification programs. 
-              Professional development in quality management systems opens doors to career advancement and organizational leadership opportunities.
+              Access a comprehensive documentation kit that contains all the documents needed for ISO 9001:2015 certification. 
+              Our process mapping tool generates professional, audit-ready documentation that streamlines your certification journey 
+              and ensures full compliance with international quality standards.
             </p>
-            <Button variant="outline" asChild>
-              <a 
-                href="https://www.qse-academy.com/iso9001version2015/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                Explore ISO 9001:2015 Training
-                <ExternalLink className="w-4 h-4" />
-              </a>
+            <Button 
+              size="lg"
+              onClick={() => setShowTool(true)}
+              className="inline-flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Start Process Mapping
             </Button>
           </div>
         </div>
