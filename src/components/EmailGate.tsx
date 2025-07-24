@@ -50,22 +50,24 @@ export const EmailGate: React.FC<EmailGateProps> = ({ data, industry, onEmailSub
 
   const sendToZohoWebhook = async (email: string, industry: string, data: ProcessMappingData) => {
     try {
-      const formData = new FormData();
-      formData.append('email', email);
-      formData.append('industry', industry);
-      formData.append('timestamp', new Date().toISOString());
-      formData.append('processes_count', data.processes.length.toString());
-      formData.append('source', 'process_mapping_tool');
-
-      const response = await fetch('https://flow.zoho.com/777366930/flow/webhook/incoming?zapikey=1001.273f2ba4967eab2af9311b9816e6500b.52a814c43916bb932e8b7cf456b47153&isdebug=false', {
-        method: 'POST',
-        body: formData,
-        mode: 'no-cors' // Handle CORS issues
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { error } = await supabase.functions.invoke('send-webhook', {
+        body: {
+          email,
+          industry,
+          processes_count: data.processes.length,
+          source: 'process_mapping_tool'
+        }
       });
 
-      console.log('Zoho webhook triggered for email:', email);
+      if (error) {
+        console.error('Error sending to webhook:', error);
+      } else {
+        console.log('Successfully sent data to webhook for email:', email);
+      }
     } catch (error) {
-      console.error('Error sending to Zoho webhook:', error);
+      console.error('Error calling webhook function:', error);
       // Don't throw error here - we still want to send the email even if webhook fails
     }
   };
